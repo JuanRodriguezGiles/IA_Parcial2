@@ -1,10 +1,22 @@
-﻿using UnityEngine;
+﻿using System.Numerics;
+
+using UnityEngine;
+using UnityEngine.EventSystems;
+
+using Vector3 = UnityEngine.Vector3;
 
 public class AgentBase : MonoBehaviour
 {
     protected Genome genome;
     protected NeuralNetwork brain;
     protected float[] inputs;
+    protected GameObject nearFood;
+    protected Vector3 lastPos;
+
+    public bool isOnFood = false;
+    public bool isEnemyOnFood = false;
+    public bool isAgent1 = false;
+    public bool dead = false;
 
     public void SetBrain(Genome genome, NeuralNetwork brain)
     {
@@ -14,12 +26,74 @@ public class AgentBase : MonoBehaviour
         OnReset();
     }
 
-    public void Think(float dt)
+    public void Reset()
     {
-        OnThink(dt);
+        OnReset();
     }
 
-    protected virtual void OnThink(float dt)
+    public void SetNearFood(GameObject nearFood)
+    {
+        this.nearFood = nearFood;
+    }
+
+    protected void Move(float x, float y, float xDir, float yDir)
+    {
+        if (isOnFood && isEnemyOnFood)
+        {
+            Debug.Log("Retreated to previous pos");
+            (transform.position, lastPos) = (lastPos, transform.position);
+        }
+        else
+        {
+            lastPos = transform.position;
+
+            if (x > y)
+            {
+                switch (xDir)
+                {
+                    case < 0.5f: //Left
+                        transform.Translate(Vector3.left);
+                        Debug.Log("Left");
+                        break;
+                    case >= 0.5f: //Right
+                        transform.Translate(Vector3.right);
+                        Debug.Log("Right");
+                        break;
+                }
+            }
+            else
+            {
+                switch (yDir)
+                {
+                    case < 0.5f: //Up
+                        transform.Translate(Vector3.up);
+                        Debug.Log("Up");
+                        break;
+                    case >= 0.5f: //Down
+                        transform.Translate(Vector3.down);
+                        Debug.Log("Down");
+                        break;
+                }
+            }
+        }
+    }
+
+    public void Think()
+    {
+        OnThink();
+    }
+
+    public void EatFood()
+    {
+        OnEatFood();
+    }
+
+    protected virtual void OnEatFood()
+    {
+        
+    }
+    
+    protected virtual void OnThink()
     {
     }
 

@@ -39,7 +39,7 @@ public class GeneticAlgorithm
 
 	int eliteCount = 0;
 	float mutationChance = 0.0f;
-	float mutationRate = 0.0f;
+	public float mutationRate = 0.0f;
 
 	public GeneticAlgorithm(int eliteCount, float mutationChance, float mutationRate)
 	{

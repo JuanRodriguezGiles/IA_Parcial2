@@ -1,11 +1,14 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.UI;
 
 public class SimulationScreen : MonoBehaviour
 {
     public Text generationsCountTxt;
+    public Text turnsCountTxt;
     public Text bestFitnessTxt;
     public Text avgFitnessTxt;
     public Text worstFitnessTxt;
@@ -16,11 +19,13 @@ public class SimulationScreen : MonoBehaviour
     public GameObject startConfigurationScreen;
 
     string generationsCountText;
+    string turnsCountText;
     string bestFitnessText;
     string avgFitnessText;
     string worstFitnessText;
     string timerText;
     int lastGeneration = 0;
+    private int turns = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -31,13 +36,15 @@ public class SimulationScreen : MonoBehaviour
         timerTxt.text = string.Format(timerText, PopulationManager.Instance.IterationCount);
 
         if (string.IsNullOrEmpty(generationsCountText))
-            generationsCountText = generationsCountTxt.text;   
+            generationsCountText = generationsCountTxt.text;
+        if (string.IsNullOrEmpty(turnsCountText))
+            turnsCountText = turnsCountTxt.text;
         if (string.IsNullOrEmpty(bestFitnessText))
-            bestFitnessText = bestFitnessTxt.text;   
+            bestFitnessText = bestFitnessTxt.text;
         if (string.IsNullOrEmpty(avgFitnessText))
-            avgFitnessText = avgFitnessTxt.text;   
+            avgFitnessText = avgFitnessTxt.text;
         if (string.IsNullOrEmpty(worstFitnessText))
-            worstFitnessText = worstFitnessTxt.text;   
+            worstFitnessText = worstFitnessTxt.text;
 
         pauseBtn.onClick.AddListener(OnPauseButtonClick);
         stopBtn.onClick.AddListener(OnStopButtonClick);
@@ -46,15 +53,18 @@ public class SimulationScreen : MonoBehaviour
     void OnEnable()
     {
         if (string.IsNullOrEmpty(generationsCountText))
-            generationsCountText = generationsCountTxt.text;   
+            generationsCountText = generationsCountTxt.text;
+        if (string.IsNullOrEmpty(turnsCountText))
+            turnsCountText = turnsCountTxt.text;
         if (string.IsNullOrEmpty(bestFitnessText))
-            bestFitnessText = bestFitnessTxt.text;   
+            bestFitnessText = bestFitnessTxt.text;
         if (string.IsNullOrEmpty(avgFitnessText))
-            avgFitnessText = avgFitnessTxt.text;   
+            avgFitnessText = avgFitnessTxt.text;
         if (string.IsNullOrEmpty(worstFitnessText))
-            worstFitnessText = worstFitnessTxt.text;   
+            worstFitnessText = worstFitnessTxt.text;
 
         generationsCountTxt.text = string.Format(generationsCountText, 0);
+        turnsCountTxt.text = string.Format(turnsCountText, 0);
         bestFitnessTxt.text = string.Format(bestFitnessText, 0);
         avgFitnessTxt.text = string.Format(avgFitnessText, 0);
         worstFitnessTxt.text = string.Format(worstFitnessText, 0);
@@ -88,6 +98,12 @@ public class SimulationScreen : MonoBehaviour
             bestFitnessTxt.text = string.Format(bestFitnessText, PopulationManager.Instance.bestFitness);
             avgFitnessTxt.text = string.Format(avgFitnessText, PopulationManager.Instance.avgFitness);
             worstFitnessTxt.text = string.Format(worstFitnessText, PopulationManager.Instance.worstFitness);
+        }
+
+        if (turns != PopulationManager.Instance.turns)
+        {
+            turnsCountText = PopulationManager.Instance.turns.ToString();
+            turnsCountTxt.text = string.Format(generationsCountText, PopulationManager.Instance.turns);
         }
     }
 }
