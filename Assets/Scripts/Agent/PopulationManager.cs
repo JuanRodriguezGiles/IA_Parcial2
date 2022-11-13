@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 using Random = UnityEngine.Random;
@@ -14,8 +15,14 @@ public class PopulationManager : MonoBehaviour
     public int GridWidth = 100;
     public int GridHeight = 100;
 
+    private int lastSavedGenome1 = 0;
+    private int lastSavedGenome2 = 0;
+
     public GameObject agent1Prefab;
     public GameObject agent2Prefab;
+
+    public bool useSavedGenomes;
+    public bool resetLoadCount;
 
     [HideInInspector] public AgentConfiguration agent1 = new AgentConfiguration();
     [HideInInspector] public AgentConfiguration agent2 = new AgentConfiguration();
@@ -129,9 +136,10 @@ public class PopulationManager : MonoBehaviour
         genAlgAgent2 = new GeneticAlgorithm(agent2.EliteCount, agent2.MutationChance, agent2.MutationRate);
 
         gridManager.CreateGrid(GridHeight, GridWidth);
-        gridManager.CreateFood(agent1.PopulationCount + agent2.PopulationCount, GridHeight, GridWidth);
 
         GenerateInitialPopulation();
+
+        gridManager.CreateFood(populationGOs.Count, GridHeight, GridWidth);
 
         isRunning = true;
     }
@@ -160,34 +168,68 @@ public class PopulationManager : MonoBehaviour
         // Destroy previous agents (if there are any)
         DestroyAgents();
 
-        for (int i = 0; i < agent1.PopulationCount; i++)
+        if (resetLoadCount)
         {
-            NeuralNetwork brain = CreateBrain(1);
-
-            Genome genome = new Genome(brain.GetTotalWeightsCount());
-
-            brain.SetWeights(genome.genome);
-            brains1.Add(brain);
-
-            population1.Add(genome);
-            populationGOs1.Add(CreateAgent(genome, brain, agent1Prefab, 1, i));
-            populationGOs.Add(populationGOs1[i]);
+            useSavedGenomes = false;
+            PlayerPrefs.DeleteKey("LastSave1");
+            PlayerPrefs.DeleteKey("LastSave2");
         }
-
-        for (int i = 0; i < agent2.PopulationCount; i++)
+        
+        if (useSavedGenomes)
         {
-            NeuralNetwork brain = CreateBrain(2);
+            string json1 = File.ReadAllText(Application.persistentDataPath + "/agent1GenomeV" + lastSavedGenome1 + ".json");
+            DataModel dataModel1 = JsonUtility.FromJson<DataModel>(json1);
 
-            Genome genome = new Genome(brain.GetTotalWeightsCount());
+            string json2 = File.ReadAllText(Application.persistentDataPath + "/agent2GenomeV" + lastSavedGenome2 + ".json");
+            DataModel dataModel2 = JsonUtility.FromJson<DataModel>(json2);
 
-            brain.SetWeights(genome.genome);
-            brains2.Add(brain);
-
-            population2.Add(genome);
-            populationGOs2.Add(CreateAgent(genome, brain, agent2Prefab, 2, i));
-            populationGOs.Add(populationGOs2[i]);
+            for (int i = 0; i < dataModel1.genome.Count; i++) 
+            {
+               brains1.Add(dataModel1.brain[i]);
+               population1.Add(dataModel1.genome[i]);
+               populationGOs1.Add(CreateAgent(dataModel1.genome[i], dataModel1.brain[i], agent1Prefab, 1, i));
+               populationGOs.Add(populationGOs1[i]);
+            }
+            
+            for (int i = 0; i < dataModel2.genome.Count; i++) 
+            {
+                brains2.Add(dataModel2.brain[i]);
+                population2.Add(dataModel2.genome[i]);
+                populationGOs2.Add(CreateAgent(dataModel2.genome[i], dataModel2.brain[i], agent2Prefab, 2, i));
+                populationGOs.Add(populationGOs2[i]);
+            }
         }
+        else
+        {
+            for (int i = 0; i < agent1.PopulationCount; i++)
+            {
+                NeuralNetwork brain = CreateBrain(1);
 
+                Genome genome = new Genome(brain.GetTotalWeightsCount());
+
+                brain.SetWeights(genome.genome);
+                brains1.Add(brain);
+
+                population1.Add(genome);
+                populationGOs1.Add(CreateAgent(genome, brain, agent1Prefab, 1, i));
+                populationGOs.Add(populationGOs1[i]);
+            }
+
+            for (int i = 0; i < agent2.PopulationCount; i++)
+            {
+                NeuralNetwork brain = CreateBrain(2);
+
+                Genome genome = new Genome(brain.GetTotalWeightsCount());
+
+                brain.SetWeights(genome.genome);
+                brains2.Add(brain);
+
+                population2.Add(genome);
+                populationGOs2.Add(CreateAgent(genome, brain, agent2Prefab, 2, i));
+                populationGOs.Add(populationGOs2[i]);
+            }
+        }
+        
         accumTime = 0.0f;
     }
 
@@ -235,12 +277,17 @@ public class PopulationManager : MonoBehaviour
         // Increment generation counter
         generation++;
 
+        if (generation % 2 == 0) 
+        {
+            SavePopulation();
+        }
+        
         // Calculate best, average and worst fitness
         bestFitness = getBestFitness();
         avgFitness = getAvgFitness();
         worstFitness = getWorstFitness();
 
-        for (int i = populationGOs.Count - 1; i >= 0; i--) 
+        for (int i = populationGOs.Count - 1; i >= 0; i--)
         {
             if (populationGOs[i].fitness == 0 || populationGOs[i].age > 3)
             {
@@ -250,23 +297,26 @@ public class PopulationManager : MonoBehaviour
                 {
                     populationGOs1.Remove(agent);
                     population1.Remove(agent.genome);
+                    brains1.Remove(agent.brain);
                 }
                 else
                 {
                     populationGOs2.Remove(agent);
                     population2.Remove(agent.genome);
+                    brains2.Remove(agent.brain);
                 }
+
                 populationGOs.Remove(agent);
                 Destroy(agent.gameObject);
             }
         }
-        
+
         foreach (var agent in populationGOs)
         {
             agent.age++;
             Debug.Log("New age " + agent.age);
         }
-        
+
         if (populationGOs1.Count == 0)
         {
             Debug.Log("Population1 EXTINCT");
@@ -313,12 +363,12 @@ public class PopulationManager : MonoBehaviour
 
                 brain.SetWeights(genome.genome);
                 brains2.Add(brain);
-                
+
                 populationGOs2.Add(CreateAgent(genome, brain, agent2Prefab, 2, i));
                 populationGOs.Add(populationGOs2[i]);
             }
         }
-        
+
         for (int i = 0; i < populationGOs.Count; i++)
         {
             ResetPos(populationGOs[i].transform, populationGOs[i].isAgent1, i);
@@ -326,16 +376,16 @@ public class PopulationManager : MonoBehaviour
 
         int agents1ToBreed = population1.Count(a => a.fitness >= 2);
         Debug.Log("Team 1 able to breed count " + agents1ToBreed);
-        
+
         int agents2ToBreed = population2.Count(a => a.fitness >= 2);
         Debug.Log("Team 2 able to breed count " + agents2ToBreed);
-        
-        
+
+
         if (agents1ToBreed >= 2)
         {
             Breed(true);
         }
-        
+
         if (agents2ToBreed >= 2)
         {
             Breed(false);
@@ -358,64 +408,68 @@ public class PopulationManager : MonoBehaviour
             return;
         }
 
+        //1 Move all agents
         foreach (var agent in populationGOs)
         {
-            if (agent.dead) continue;
-
             GameObject nearestFood = GetNearestFood(agent.transform.position);
             agent.SetNearFood(nearestFood);
 
-            // if (IsOnFood(agent.transform.position))
-            // {
-            //     agent.isOnFood = true;
-            //     if (IsEnemyOnSameFood(agent.transform.position, agent.isAgent1))
-            //     {
-            //         agent.isEnemyOnFood = true;
-            //     }
-            // }
+            agent.Think();
+            KeepAgentInBounds(agent);
+        }
+
+        //2 Check for agents on food
+        foreach (var agent in populationGOs.Where(agent => IsOnFood(agent.transform.position)))
+        {
+            agent.isOnFood = true;
+            if (IsEnemyOnSameFood(agent.transform.position, agent.isAgent1))
+            {
+                agent.isEnemyOnFood = true;
+            }
 
             agent.Think();
+            KeepAgentInBounds(agent);
+        }
 
-            if (IsOnFood(agent.transform.position))
+        //3 Resolve agents still on food
+        foreach (var agent in populationGOs.Where(agent => IsOnFood(agent.transform.position)))
+        {
+            if (IsEnemyOnSameFood(agent.transform.position, agent.isAgent1))
             {
-                if (IsEnemyOnSameFood(agent.transform.position, agent.isAgent1))
+                Agent enemy = GetEnemyOnSameFood(agent.transform.position, agent.isAgent1);
+
+                if (Random.Range(0.0f, 1.0f) > 0.5f)
                 {
-                    Agent enemy = GetEnemyOnSameFood(agent.transform.position, agent.isAgent1);
+                    Debug.Log("Enemy died");
+                    enemy.dead = true;
 
-                    if (Random.Range(0.0f, 1.0f) > 0.5f)
-                    {
-                        Debug.Log("Enemy died");
-                        enemy.dead = true;
-
-                        agent.EatFood();
-                        agent.isOnFood = false;
-                        agent.isEnemyOnFood = false;
-                        RemoveFood(agent.transform.position);
-                    }
-                    else
-                    {
-                        Debug.Log("Agent died");
-                        agent.dead = true;
-
-                        enemy.EatFood();
-                        enemy.isOnFood = false;
-                        enemy.isEnemyOnFood = false;
-                        RemoveFood(enemy.transform.position);
-                    }
-                }
-                else
-                {
-                    Debug.Log("Ate food with no enemies");
                     agent.EatFood();
                     agent.isOnFood = false;
                     agent.isEnemyOnFood = false;
                     RemoveFood(agent.transform.position);
                 }
-            }
+                else
+                {
+                    Debug.Log("Agent died");
+                    agent.dead = true;
 
-            KeepAgentInBounds(agent);
+                    enemy.EatFood();
+                    enemy.isOnFood = false;
+                    enemy.isEnemyOnFood = false;
+                    RemoveFood(enemy.transform.position);
+                }
+            }
+            else
+            {
+                Debug.Log("Ate food with no enemies");
+                agent.EatFood();
+                agent.isOnFood = false;
+                agent.isEnemyOnFood = false;
+                RemoveFood(agent.transform.position);
+            }
         }
 
+        //Kill dead agents / reset
         for (int i = 0; i < populationGOs.Count; i++)
         {
             if (populationGOs[i].dead)
@@ -425,14 +479,22 @@ public class PopulationManager : MonoBehaviour
                 {
                     populationGOs1.Remove(agent);
                     population1.Remove(agent.genome);
+                    brains1.Remove(agent.brain);
                 }
                 else
                 {
                     populationGOs2.Remove(agent);
                     population2.Remove(agent.genome);
+                    brains2.Remove(agent.brain);
                 }
+
                 populationGOs.Remove(agent);
                 Destroy(agent.gameObject);
+            }
+            else
+            {
+                populationGOs[i].isOnFood = false;
+                populationGOs[i].isEnemyOnFood = false;
             }
         }
     }
@@ -483,6 +545,7 @@ public class PopulationManager : MonoBehaviour
         {
             pos.y = GridHeight - 1;
         }
+
         GameObject go = Instantiate(agentPrefab, pos, Quaternion.identity);
         Agent t = go.GetComponent<Agent>();
         t.isAgent1 = agent == 1;
@@ -543,14 +606,7 @@ public class PopulationManager : MonoBehaviour
 
     Agent GetEnemyOnSameFood(Vector3 pos, bool isAgent1)
     {
-        if (isAgent1)
-        {
-            return populationGOs2.Find(agent => agent.transform.position == pos);
-        }
-        else
-        {
-            return populationGOs1.Find(agent => agent.transform.position == pos);
-        }
+        return isAgent1 ? populationGOs2.Find(agent => agent.transform.position == pos) : populationGOs1.Find(agent => agent.transform.position == pos);
     }
 
     void KeepAgentInBounds(Agent agent)
@@ -588,16 +644,23 @@ public class PopulationManager : MonoBehaviour
     void ResetPos(Transform agentPos, bool isAgent1, int x)
     {
         Vector3 pos = new Vector3(x, 0, 0);
-        if (!isAgent1) 
+        if (!isAgent1)
         {
             pos.y = GridHeight - 1;
         }
 
         agentPos.position = pos;
     }
-    
+
     private void Load()
     {
+        TotalTurns = PlayerPrefs.GetInt("TotalTurns", 100);
+        GridHeight = PlayerPrefs.GetInt("GridSize", 100);
+        GridWidth = PlayerPrefs.GetInt("GridSize", 100);
+
+        lastSavedGenome1 = PlayerPrefs.GetInt("LastSave1", 0);
+        lastSavedGenome2 = PlayerPrefs.GetInt("LastSave2", 0);
+
         agent1.PopulationCount = PlayerPrefs.GetInt("PopulationCount", 2);
         agent1.EliteCount = PlayerPrefs.GetInt("EliteCount", 0);
         agent1.MutationChance = PlayerPrefs.GetFloat("MutationChance", 0);
@@ -608,7 +671,7 @@ public class PopulationManager : MonoBehaviour
         agent1.NeuronsCountPerHL = PlayerPrefs.GetInt("NeuronsCountPerHL", 1);
         agent1.Bias = PlayerPrefs.GetFloat("Bias", 0);
         agent1.P = PlayerPrefs.GetFloat("P", 1);
-        
+
         agent2.PopulationCount = PlayerPrefs.GetInt("PopulationCount2", 2);
         agent2.EliteCount = PlayerPrefs.GetInt("EliteCount2", 0);
         agent2.MutationChance = PlayerPrefs.GetFloat("MutationChance2", 0);
@@ -623,23 +686,26 @@ public class PopulationManager : MonoBehaviour
 
     private void Save()
     {
+        PlayerPrefs.SetInt("TotalTurns", TotalTurns);
+        PlayerPrefs.SetInt("GridSize", GridHeight);
+
         PlayerPrefs.SetInt("PopulationCount", agent1.PopulationCount);
         PlayerPrefs.SetInt("EliteCount", agent1.EliteCount);
         PlayerPrefs.SetFloat("MutationChance", agent1.MutationChance);
         PlayerPrefs.SetFloat("MutationRate", agent1.MutationRate);
         PlayerPrefs.SetInt("InputsCount", agent1.InputsCount);
-        PlayerPrefs.SetInt("HiddenLayers",agent1. HiddenLayers);
+        PlayerPrefs.SetInt("HiddenLayers", agent1.HiddenLayers);
         PlayerPrefs.SetInt("OutputsCount", agent1.OutputsCount);
         PlayerPrefs.SetInt("NeuronsCountPerHL", agent1.NeuronsCountPerHL);
         PlayerPrefs.SetFloat("Bias", agent1.Bias);
         PlayerPrefs.SetFloat("P", agent1.P);
-        
+
         PlayerPrefs.SetInt("PopulationCount2", agent2.PopulationCount);
         PlayerPrefs.SetInt("EliteCount2", agent2.EliteCount);
         PlayerPrefs.SetFloat("MutationChance2", agent2.MutationChance);
         PlayerPrefs.SetFloat("MutationRate2", agent2.MutationRate);
         PlayerPrefs.SetInt("InputsCount2", agent2.InputsCount);
-        PlayerPrefs.SetInt("HiddenLayers2",agent2. HiddenLayers);
+        PlayerPrefs.SetInt("HiddenLayers2", agent2.HiddenLayers);
         PlayerPrefs.SetInt("OutputsCount2", agent2.OutputsCount);
         PlayerPrefs.SetInt("NeuronsCountPerHL2", agent2.NeuronsCountPerHL);
         PlayerPrefs.SetFloat("Bias2", agent2.Bias);
@@ -654,10 +720,10 @@ public class PopulationManager : MonoBehaviour
         {
             List<Genome> agentsToBreed = population1.Where(a => a.fitness >= 2).ToList();
             newGenomes = genAlgAgent1.Epoch(agentsToBreed.ToArray());
-            
+
             int nextXPos = population1.Count - 1;
             population1.AddRange(newGenomes);
-            
+
             for (int i = 0; i < newGenomes.Length; i++)
             {
                 NeuralNetwork brain = CreateBrain(1);
@@ -665,25 +731,25 @@ public class PopulationManager : MonoBehaviour
 
                 brain.SetWeights(genome.genome);
                 brains1.Add(brain);
-                
+
                 Agent newAgent = CreateAgent(agent1Prefab, 1, nextXPos);
                 newAgent.SetBrain(genome, brain);
-                
+
                 nextXPos++;
                 populationGOs1.Add(newAgent);
                 populationGOs.Add(newAgent);
             }
-            
+
             agent1.PopulationCount = population1.Count;
         }
         else
         {
             List<Genome> agentsToBreed = population2.Where(a => a.fitness >= 2).ToList();
             newGenomes = genAlgAgent2.Epoch(agentsToBreed.ToArray());
-            
+
             int nextXPos = population2.Count - 1;
             population2.AddRange(newGenomes);
-            
+
             for (int i = 0; i < newGenomes.Length; i++)
             {
                 NeuralNetwork brain = CreateBrain(2);
@@ -691,7 +757,7 @@ public class PopulationManager : MonoBehaviour
 
                 brain.SetWeights(genome.genome);
                 brains2.Add(brain);
-                
+
                 Agent newAgent = CreateAgent(agent2Prefab, 2, nextXPos);
                 newAgent.SetBrain(genome, brain);
 
@@ -699,9 +765,33 @@ public class PopulationManager : MonoBehaviour
                 populationGOs2.Add(newAgent);
                 populationGOs.Add(newAgent);
             }
-            
+
             agent2.PopulationCount = population2.Count;
         }
+    }
+
+    private void SavePopulation()
+    {
+        Debug.Log("Saved population");
+       
+            DataModel brainData1 = new DataModel
+            {
+                genome = population1,
+                brain = brains1
+            };
+            File.WriteAllText(Application.persistentDataPath + "/agent1GenomeV" + lastSavedGenome1 + ".json", JsonUtility.ToJson(brainData1));
+            lastSavedGenome1++;
+            PlayerPrefs.SetInt("LastSave1", lastSavedGenome1);
+      
+            DataModel brainData2 = new DataModel
+            {
+                genome = population2,
+                brain = brains2
+            };
+            File.WriteAllText(Application.persistentDataPath + "/agent2GenomeV" + lastSavedGenome2 + ".json", JsonUtility.ToJson(brainData2));
+            lastSavedGenome2++;
+            PlayerPrefs.SetInt("LastSave2", lastSavedGenome1);
+      
     }
     #endregion
 }

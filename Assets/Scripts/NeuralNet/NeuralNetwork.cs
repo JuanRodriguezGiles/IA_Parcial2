@@ -1,7 +1,10 @@
-﻿using UnityEngine;
+﻿using System;
+
+using UnityEngine;
 
 using System.Collections.Generic;
 
+[Serializable]
 public class NeuralNetwork
 {
 	List<NeuronLayer> layers = new List<NeuronLayer>();

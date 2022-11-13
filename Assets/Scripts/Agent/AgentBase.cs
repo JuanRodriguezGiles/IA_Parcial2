@@ -8,7 +8,7 @@ using Vector3 = UnityEngine.Vector3;
 public class AgentBase : MonoBehaviour
 {
     public Genome genome;
-    protected NeuralNetwork brain;
+    public NeuralNetwork brain;
     protected float[] inputs;
     protected GameObject nearFood;
     protected Vector3 lastPos;
@@ -38,44 +38,54 @@ public class AgentBase : MonoBehaviour
 
     protected void Move(float x, float y, float xDir, float yDir)
     {
-        if (isOnFood && isEnemyOnFood)
+        lastPos = transform.position;
+
+        if (x > y)
+        {
+            switch (xDir)
+            {
+                case < 0.5f: //Left
+                    transform.Translate(Vector3.left);
+                    Debug.Log("Left");
+                    break;
+                case >= 0.5f: //Right
+                    transform.Translate(Vector3.right);
+                    Debug.Log("Right");
+                    break;
+            }
+        }
+        else
+        {
+            switch (yDir)
+            {
+                case < 0.5f: //Up
+                    transform.Translate(Vector3.up);
+                    Debug.Log("Up");
+                    break;
+                case >= 0.5f: //Down
+                    transform.Translate(Vector3.down);
+                    Debug.Log("Down");
+                    break;
+            }
+        }
+    }
+
+    protected void FightOrFlight(float stay)
+    {
+        if (stay > 0.5f)
+        {
+            Debug.Log("Stays on food");
+        }
+        else
         {
             Debug.Log("Retreated to previous pos");
             (transform.position, lastPos) = (lastPos, transform.position);
         }
-        else
-        {
-            lastPos = transform.position;
-
-            if (x > y)
-            {
-                switch (xDir)
-                {
-                    case < 0.5f: //Left
-                        transform.Translate(Vector3.left);
-                        Debug.Log("Left");
-                        break;
-                    case >= 0.5f: //Right
-                        transform.Translate(Vector3.right);
-                        Debug.Log("Right");
-                        break;
-                }
-            }
-            else
-            {
-                switch (yDir)
-                {
-                    case < 0.5f: //Up
-                        transform.Translate(Vector3.up);
-                        Debug.Log("Up");
-                        break;
-                    case >= 0.5f: //Down
-                        transform.Translate(Vector3.down);
-                        Debug.Log("Down");
-                        break;
-                }
-            }
-        }
+    }
+    
+    protected Vector3 GetDirToFood(GameObject food)
+    {
+        return (food.transform.position - transform.position).normalized;
     }
 
     public void Think()
@@ -90,9 +100,8 @@ public class AgentBase : MonoBehaviour
 
     protected virtual void OnEatFood()
     {
-        
     }
-    
+
     protected virtual void OnThink()
     {
     }

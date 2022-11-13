@@ -1,4 +1,7 @@
-﻿public class NeuronLayer
+﻿using System;
+
+[Serializable]
+public class NeuronLayer
 {
 	private Neuron[] neurons;
 	private float[] outputs;
