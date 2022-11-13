@@ -20,7 +20,7 @@ public class Agent : AgentBase
     {
         Vector3 position = transform.position;
         Vector3 foodDir = GetDirToFood(nearFood);
-
+        
         inputs[0] = position.x;
         inputs[1] = position.y;
         inputs[2] = foodDir.x;
@@ -35,7 +35,7 @@ public class Agent : AgentBase
         {
             FightOrFlight(outputs[6]);
         }
-        else if (outputs[4] > 0.5f) 
+        else if (outputs[4] > 0.5f)
         {
             Move(outputs[0], outputs[1], outputs[2], outputs[3]);
         }

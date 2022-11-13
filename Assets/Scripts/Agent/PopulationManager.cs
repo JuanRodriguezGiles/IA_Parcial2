@@ -41,6 +41,9 @@ public class PopulationManager : MonoBehaviour
     float accumTime = 0;
     bool isRunning = false;
 
+    private DataModel dataModel1;
+    private DataModel dataModel2;
+
     public int generation { get; private set; }
 
     public int turns { get; private set; }
@@ -136,11 +139,31 @@ public class PopulationManager : MonoBehaviour
         genAlgAgent2 = new GeneticAlgorithm(agent2.EliteCount, agent2.MutationChance, agent2.MutationRate);
 
         gridManager.CreateGrid(GridHeight, GridWidth);
+        
+        if (resetLoadCount)
+        {
+            useSavedGenomes = false;
+            PlayerPrefs.DeleteKey("LastSave1");
+            PlayerPrefs.DeleteKey("LastSave2");
+        }
+        
+        if (useSavedGenomes)
+        {
+            string json1 = File.ReadAllText(Application.persistentDataPath + "/agent1GenomeV" + (lastSavedGenome1 - 1) + ".json");
+            dataModel1 = JsonUtility.FromJson<DataModel>(json1);
 
+            string json2 = File.ReadAllText(Application.persistentDataPath + "/agent2GenomeV" + (lastSavedGenome2 - 1) + ".json");
+            dataModel2 = JsonUtility.FromJson<DataModel>(json2);
+            
+            gridManager.CreateFood(dataModel1.genome.Count + dataModel2.genome.Count, GridHeight, GridWidth);
+        }
+        else
+        {
+            gridManager.CreateFood(agent1.PopulationCount + agent2.PopulationCount, GridHeight, GridHeight);
+        }
+        
         GenerateInitialPopulation();
-
-        gridManager.CreateFood(populationGOs.Count, GridHeight, GridWidth);
-
+        
         isRunning = true;
     }
 
@@ -168,13 +191,6 @@ public class PopulationManager : MonoBehaviour
         // Destroy previous agents (if there are any)
         DestroyAgents();
 
-        if (resetLoadCount)
-        {
-            useSavedGenomes = false;
-            PlayerPrefs.DeleteKey("LastSave1");
-            PlayerPrefs.DeleteKey("LastSave2");
-        }
-        
         if (useSavedGenomes)
         {
             string json1 = File.ReadAllText(Application.persistentDataPath + "/agent1GenomeV" + lastSavedGenome1 + ".json");
