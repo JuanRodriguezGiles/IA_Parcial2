@@ -1,13 +1,13 @@
-﻿using System.Numerics;
+﻿using System;
 
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 using Vector3 = UnityEngine.Vector3;
 
+[Serializable]
 public class AgentBase : MonoBehaviour
 {
-    protected Genome genome;
+    public Genome genome;
     protected NeuralNetwork brain;
     protected float[] inputs;
     protected GameObject nearFood;

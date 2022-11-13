@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class SimulationScreen : MonoBehaviour
@@ -17,6 +13,7 @@ public class SimulationScreen : MonoBehaviour
     public Button pauseBtn;
     public Button stopBtn;
     public GameObject startConfigurationScreen;
+    public GameObject startConfigurationScreen2;
 
     string generationsCountText;
     string turnsCountText;
@@ -86,6 +83,7 @@ public class SimulationScreen : MonoBehaviour
         PopulationManager.Instance.StopSimulation();
         this.gameObject.SetActive(false);
         startConfigurationScreen.SetActive(true);
+        startConfigurationScreen2.SetActive(true);
         lastGeneration = 0;
     }
 

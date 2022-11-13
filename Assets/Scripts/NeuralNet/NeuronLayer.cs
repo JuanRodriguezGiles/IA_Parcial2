@@ -1,7 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
-
-public class NeuronLayer
+﻿public class NeuronLayer
 {
 	private Neuron[] neurons;
 	private float[] outputs;

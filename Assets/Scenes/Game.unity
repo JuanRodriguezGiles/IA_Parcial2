@@ -3242,6 +3242,7 @@ MonoBehaviour:
   pauseBtn: {fileID: 1143498180}
   stopBtn: {fileID: 898333281}
   startConfigurationScreen: {fileID: 886660823}
+  startConfigurationScreen2: {fileID: 1788042824}
 --- !u!114 &493711103
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10368,6 +10369,11 @@ MonoBehaviour:
     NeuronsCountPerHL: 7
     Bias: 1
     P: 0.5
+  populationGOs: []
+  populationGOs1: []
+  populationGOs2: []
+  population1: []
+  population2: []
 --- !u!4 &1690210759
 Transform:
   m_ObjectHideFlags: 0
@@ -11168,7 +11174,6 @@ MonoBehaviour:
   biasSlider: {fileID: 2063961453}
   sigmoidSlopeTxt: {fileID: 1924263175}
   sigmoidSlopeSlider: {fileID: 480506634}
-  startButton: {fileID: 0}
   simulationScreen: {fileID: 493711100}
 --- !u!1 &1806607032
 GameObject:

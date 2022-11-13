@@ -1,8 +1,11 @@
-﻿using UnityEngine;
+﻿using System;
 
+using UnityEngine;
+
+[Serializable]
 public class Agent : AgentBase
 {
-    private float fitness = 0;
+    public float fitness = 0;
     public int age = 1;
     
     protected override void OnReset()
@@ -17,16 +20,6 @@ public class Agent : AgentBase
     {
         Vector3 position = transform.position;
         Vector3 foodPosition = nearFood.transform.position;
-
-        if (inputs == null)
-        {
-            Debug.Log("NULL INPUTs");
-        }
-
-        if (transform == null)
-        {
-            Debug.Log("NULL trans");
-        }
 
         inputs[0] = position.x;
         inputs[1] = position.y;
