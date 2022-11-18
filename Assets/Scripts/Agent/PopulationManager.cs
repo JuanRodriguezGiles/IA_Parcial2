@@ -305,7 +305,7 @@ public class PopulationManager : MonoBehaviour
 
         for (int i = populationGOs.Count - 1; i >= 0; i--)
         {
-            if (populationGOs[i].fitness == 0 || populationGOs[i].age > 3)
+            if (populationGOs[i].foodEaten == 0 || populationGOs[i].age > 3)
             {
                 Debug.Log("Agent " + i + "died");
                 Agent agent = populationGOs[i];
@@ -390,10 +390,10 @@ public class PopulationManager : MonoBehaviour
             ResetPos(populationGOs[i].transform, populationGOs[i].isAgent1, i);
         }
 
-        int agents1ToBreed = population1.Count(a => a.fitness >= 2);
+        int agents1ToBreed = populationGOs1.Count(a => a.foodEaten >= 2);
         Debug.Log("Team 1 able to breed count " + agents1ToBreed);
 
-        int agents2ToBreed = population2.Count(a => a.fitness >= 2);
+        int agents2ToBreed = populationGOs2.Count(a => a.foodEaten >= 2);
         Debug.Log("Team 2 able to breed count " + agents2ToBreed);
 
 
@@ -734,7 +734,22 @@ public class PopulationManager : MonoBehaviour
 
         if (isAgent1)
         {
-            List<Genome> agentsToBreed = population1.Where(a => a.fitness >= 2).ToList();
+            List<Genome> agentsToBreed = new List<Genome>();
+
+            for (int i = 0; i < populationGOs1.Count; i++)
+            {
+                if (populationGOs1[i].foodEaten >= 2)
+                {
+                    agentsToBreed.Add(populationGOs1[i].genome);
+                }
+            }
+
+            //Make list even
+            if (agentsToBreed.Count % 2 != 0)
+            {
+                agentsToBreed.RemoveAt(agentsToBreed.Count - 1);
+            }
+            
             newGenomes = genAlgAgent1.Epoch(agentsToBreed.ToArray());
 
             int nextXPos = population1.Count - 1;
@@ -760,7 +775,16 @@ public class PopulationManager : MonoBehaviour
         }
         else
         {
-            List<Genome> agentsToBreed = population2.Where(a => a.fitness >= 2).ToList();
+            List<Genome> agentsToBreed = new List<Genome>();
+
+            for (int i = 0; i < populationGOs2.Count; i++)
+            {
+                if (populationGOs2[i].foodEaten >= 2)
+                {
+                    agentsToBreed.Add(populationGOs2[i].genome);
+                }
+            }
+
             newGenomes = genAlgAgent2.Epoch(agentsToBreed.ToArray());
 
             int nextXPos = population2.Count - 1;

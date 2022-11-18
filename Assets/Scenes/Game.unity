@@ -10348,7 +10348,7 @@ MonoBehaviour:
   agent1Prefab: {fileID: 4966235673742335082, guid: 1282cc772a378f74db29f95e8da8491d, type: 3}
   agent2Prefab: {fileID: 2061075016418113759, guid: 5dde527f2adbdd748995a3e7d2c49c9e, type: 3}
   useSavedGenomes: 0
-  resetLoadCount: 1
+  resetLoadCount: 0
   agent1:
     PopulationCount: 40
     EliteCount: 4

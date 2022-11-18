@@ -75,7 +75,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 2
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.034784317, g: 0, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -97,3 +97,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 965ff4e57c27a4523b716da6701e3974, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  genome:
+    genome: []
+    fitness: 0
+  isOnFood: 0
+  isEnemyOnFood: 0
+  isAgent1: 0
+  dead: 0
+  fitness: 0
+  age: 1

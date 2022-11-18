@@ -39,7 +39,7 @@ public class AgentBase : MonoBehaviour
     protected void Move(float x, float y, float xDir, float yDir)
     {
         lastPos = transform.position;
-
+        
         if (x > y)
         {
             switch (xDir)
