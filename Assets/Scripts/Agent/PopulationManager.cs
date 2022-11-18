@@ -138,6 +138,8 @@ public class PopulationManager : MonoBehaviour
         genAlgAgent1 = new GeneticAlgorithm(agent1.EliteCount, agent1.MutationChance, agent1.MutationRate);
         genAlgAgent2 = new GeneticAlgorithm(agent2.EliteCount, agent2.MutationChance, agent2.MutationRate);
 
+        DestroyFood();
+
         gridManager.CreateGrid(GridHeight, GridWidth);
         
         if (resetLoadCount)
@@ -180,6 +182,7 @@ public class PopulationManager : MonoBehaviour
         turns = 0;
 
         DestroyAgents();
+        DestroyFood();
     }
 
     // Generate the random initial population
@@ -570,12 +573,11 @@ public class PopulationManager : MonoBehaviour
 
     void DestroyAgents()
     {
-        foreach (Agent go in populationGOs1)
+        foreach (Agent go in populationGOs)
             Destroy(go.gameObject);
-
-        foreach (Agent go in populationGOs2)
-            Destroy(go.gameObject);
-
+        
+        populationGOs.Clear();
+        
         populationGOs1.Clear();
         population1.Clear();
         brains1.Clear();
@@ -583,6 +585,11 @@ public class PopulationManager : MonoBehaviour
         populationGOs2.Clear();
         population2.Clear();
         brains2.Clear();
+    }
+
+    void DestroyFood()
+    {
+        gridManager.DeleteAllFood();
     }
 
     GameObject GetNearestFood(Vector3 pos)

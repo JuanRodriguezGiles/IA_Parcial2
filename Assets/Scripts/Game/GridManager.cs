@@ -64,4 +64,14 @@ public class GridManager : MonoBehaviour
 
         CreateFood(maxFood, rows, columns);
     }
+
+    public void DeleteAllFood()
+    {
+        foreach (var f in foods)
+        {
+            Destroy(f);
+        }
+
+        foods.Clear();
+    }
 }
