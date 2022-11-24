@@ -11,12 +11,14 @@ public class AgentBase : MonoBehaviour
     public NeuralNetwork brain;
     protected float[] inputs;
     protected GameObject nearFood;
-    protected Vector3 lastPos;
+    public Vector3 lastPos;
 
     public bool isOnFood = false;
-    public bool isEnemyOnFood = false;
+    public bool isOnCellWithEnemy = false;
+    public bool isOnCellWithAlly = false;
     public bool isAgent1 = false;
     public bool dead = false;
+    public bool ranAway = false;
 
     public void SetBrain(Genome genome, NeuralNetwork brain)
     {
@@ -36,38 +38,73 @@ public class AgentBase : MonoBehaviour
         this.nearFood = nearFood;
     }
 
-    protected void Move(float x, float y, float xDir, float yDir)
+    protected void Move(float sameYasFood, float foodX)
     {
         lastPos = transform.position;
+
+        bool moveUp = sameYasFood > 0.75f;
+        float positive = foodX < 0.5f ? -1f : 1f;
         
-        if (x > y)
-        {
-            switch (xDir)
-            {
-                case < 0.5f: //Left
-                    transform.Translate(Vector3.left);
-                    Debug.Log("Left");
-                    break;
-                case >= 0.5f: //Right
-                    transform.Translate(Vector3.right);
-                    Debug.Log("Right");
-                    break;
-            }
-        }
-        else
-        {
-            switch (yDir)
-            {
-                case < 0.5f: //Up
-                    transform.Translate(Vector3.up);
-                    Debug.Log("Up");
-                    break;
-                case >= 0.5f: //Down
-                    transform.Translate(Vector3.down);
-                    Debug.Log("Down");
-                    break;
-            }
-        }
+        Vector3 movement = new Vector3(!moveUp ? positive : 0f, moveUp ? positive : 0f, 0f);
+        transform.Translate(movement);
+        
+        // if (foodX > foodY+0.5f)
+        // {
+        //     switch (foodX)
+        //     {
+        //         case < 0.5f: //Left
+        //             transform.Translate(Vector3.left);
+        //             Debug.Log("Left");
+        //             break;
+        //         case >= 0.5f: //Right
+        //             transform.Translate(Vector3.right);
+        //             Debug.Log("Right");
+        //             break;
+        //     }
+        // }
+        // else
+        // {
+        //     switch (foodY)
+        //     {
+        //         case < 0.5f: //Up
+        //             transform.Translate(Vector3.up);
+        //             Debug.Log("Up");
+        //             break;
+        //         case >= 0.5f: //Down
+        //             transform.Translate(Vector3.down);
+        //             Debug.Log("Down");
+        //             break;
+        //     }
+        // }
+        
+        // if (foodX > foodY)
+        // {
+        //     switch (xDir)
+        //     {
+        //         case < 0.5f: //Left
+        //             transform.Translate(Vector3.left);
+        //             Debug.Log("Left");
+        //             break;
+        //         case >= 0.5f: //Right
+        //             transform.Translate(Vector3.right);
+        //             Debug.Log("Right");
+        //             break;
+        //     }
+        // }
+        // else
+        // {
+        //     switch (yDir)
+        //     {
+        //         case < 0.5f: //Up
+        //             transform.Translate(Vector3.up);
+        //             Debug.Log("Up");
+        //             break;
+        //         case >= 0.5f: //Down
+        //             transform.Translate(Vector3.down);
+        //             Debug.Log("Down");
+        //             break;
+        //     }
+        // }
     }
 
     protected void FightOrFlight(float stay)
@@ -78,16 +115,22 @@ public class AgentBase : MonoBehaviour
         }
         else
         {
-            Debug.Log("Retreated to previous pos");
-            (transform.position, lastPos) = (lastPos, transform.position);
+            Retreat();
         }
     }
     
-    protected Vector3 GetDirToFood(GameObject food)
+    protected Vector3 GetDirToFood(Vector3 food)
     {
-        return (food.transform.position - transform.position).normalized;
+        return (food - transform.position).normalized;
     }
 
+    public void Retreat()
+    {
+        ranAway = true;
+        Debug.Log("Retreated to previous pos");
+        (transform.position, lastPos) = (lastPos, transform.position);
+    }
+    
     public void Think()
     {
         OnThink();

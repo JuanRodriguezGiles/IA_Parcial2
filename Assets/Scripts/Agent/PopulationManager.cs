@@ -308,10 +308,11 @@ public class PopulationManager : MonoBehaviour
 
         for (int i = populationGOs.Count - 1; i >= 0; i--)
         {
-            if (populationGOs[i].foodEaten == 0 || populationGOs[i].age > 3)
+            Agent agent = populationGOs[i];
+            if (agent.foodEaten == 0 || agent.age > 3)
             {
                 Debug.Log("Agent " + i + "died");
-                Agent agent = populationGOs[i];
+                
                 if (agent.isAgent1)
                 {
                     populationGOs1.Remove(agent);
@@ -328,6 +329,11 @@ public class PopulationManager : MonoBehaviour
                 populationGOs.Remove(agent);
                 Destroy(agent.gameObject);
             }
+            else if (populationGOs[i].foodEaten < 2) 
+            {
+                agent.fitness--;
+                agent.genome.fitness = agent.fitness;
+            }
         }
 
         foreach (var agent in populationGOs)
@@ -336,6 +342,10 @@ public class PopulationManager : MonoBehaviour
             Debug.Log("New age " + agent.age);
         }
 
+        if (populationGOs1.Count == 0 && populationGOs2.Count == 0)
+        {
+            Debug.Log("RIPPPPPPPPPPPPPP");
+        }
         if (populationGOs1.Count == 0)
         {
             Debug.Log("Population1 EXTINCT");
@@ -435,60 +445,148 @@ public class PopulationManager : MonoBehaviour
 
             agent.Think();
             KeepAgentInBounds(agent);
-        }
 
-        //2 Check for agents on food
-        foreach (var agent in populationGOs.Where(agent => IsOnFood(agent.transform.position)))
-        {
-            agent.isOnFood = true;
-            if (IsEnemyOnSameFood(agent.transform.position, agent.isAgent1))
+            if (IsOnFood(agent.transform.position))
             {
-                agent.isEnemyOnFood = true;
+                agent.isOnFood = true;
             }
-
-            agent.Think();
-            KeepAgentInBounds(agent);
         }
 
-        //3 Resolve agents still on food
-        foreach (var agent in populationGOs.Where(agent => IsOnFood(agent.transform.position)))
+        //2 Check for agents on same cell as enemy or ally
+        foreach (var agent in populationGOs)
         {
-            if (IsEnemyOnSameFood(agent.transform.position, agent.isAgent1))
+            Agent a = TryGetAgentOnSameCell(agent);
+
+            if (a != null)
             {
-                Agent enemy = GetEnemyOnSameFood(agent.transform.position, agent.isAgent1);
-
-                if (Random.Range(0.0f, 1.0f) > 0.5f)
+                if (agent.isAgent1 == a.isAgent1)
                 {
-                    Debug.Log("Enemy died");
-                    enemy.dead = true;
-
-                    agent.EatFood();
-                    agent.isOnFood = false;
-                    agent.isEnemyOnFood = false;
-                    RemoveFood(agent.transform.position);
+                    agent.isOnCellWithAlly = true;
+                    
+                    if (agent.isOnFood)
+                    {
+                        agent.Think();
+                        KeepAgentInBounds(agent);
+                    }
                 }
                 else
                 {
-                    Debug.Log("Agent died");
-                    agent.dead = true;
-
-                    enemy.EatFood();
-                    enemy.isOnFood = false;
-                    enemy.isEnemyOnFood = false;
-                    RemoveFood(enemy.transform.position);
+                    agent.isOnCellWithEnemy = true;
+                    agent.enemy = a;
+                    
+                    agent.Think();
+                    KeepAgentInBounds(agent);
                 }
-            }
-            else
-            {
-                Debug.Log("Ate food with no enemies");
-                agent.EatFood();
-                agent.isOnFood = false;
-                agent.isEnemyOnFood = false;
-                RemoveFood(agent.transform.position);
             }
         }
 
-        //Kill dead agents / reset
+        //3 Resolve actions
+        foreach (var agent in populationGOs)
+        {
+            if (!agent.dead) 
+            {
+                if (agent.isOnCellWithEnemy && !agent.isOnFood) //On cell with enemy but not on food
+                {
+                    if (agent.transform.position.y == 0 || agent.transform.position.y == GridHeight - 1)
+                    {
+                        Debug.Log("Agent at limit no fight");
+                    }
+                    else
+                    {
+                        if (agent.ranAway && agent.enemy.ranAway) //Both escape
+                        {
+                            Debug.Log("both enemies on same cell ran");
+                        }
+                        else if (agent.ranAway && !agent.enemy.ranAway) //Run 75
+                        {
+                            if (Random.Range(0.0f, 1.0f) < 0.75f)
+                            {
+                                Debug.Log("agent tried to run away and died");
+                                agent.dead = true;
+                            }
+                        }
+                        else if (!agent.ranAway && agent.enemy.ranAway) //Run  75
+                        {
+                            if (Random.Range(0.0f, 1.0f) < 0.75f)
+                            {
+                                Debug.Log("enemy tried to run away and died");
+                                agent.enemy.dead = true;
+                            }
+                        }
+                        else //Fight 50/50
+                        {
+                            if (Random.Range(0.0f, 1.0f) > 0.5f)
+                            {
+                                Debug.Log("Enemy died");
+                                agent.enemy.dead = true;
+                            }
+                            else
+                            {
+                                Debug.Log("Agent died");
+                                agent.dead = true;
+                            }
+                        }
+                    }
+                    
+                    agent.isOnCellWithEnemy = false;
+                    agent.enemy.isOnCellWithEnemy = false;
+
+                }
+                else if (agent.isOnCellWithEnemy && agent.isOnFood) //On cell with enemy and on food
+                {
+                    if (agent.ranAway && agent.enemy.ranAway)
+                    {
+                        Debug.Log("Both ran away");
+                    }
+                    else if (agent.ranAway && !agent.enemy.ranAway)
+                    {
+                        Debug.Log("Agent ran away and enemy ate");
+                        agent.enemy.EatFood();
+                        RemoveFood(agent.enemy.transform.position);
+                    }
+                    else if (!agent.ranAway && agent.enemy.ranAway)
+                    {
+                        Debug.Log("enemy ran away and agent ate");
+                        agent.EatFood();
+                        RemoveFood(agent.transform.position);
+                    }
+                    else
+                    {
+                        if (Random.Range(0.0f, 1.0f) > 0.5f)
+                        {
+                            Debug.Log("Enemy died");
+                            agent.enemy.dead = true;
+                            agent.EatFood();
+                            RemoveFood(agent.transform.position);
+                        }
+                        else
+                        {
+                            Debug.Log("Agent died");
+                            agent.dead = true;
+                            agent.enemy.EatFood();
+                            RemoveFood(agent.enemy.transform.position);
+                        }
+                    }
+                    
+                    agent.isOnFood = false;
+                    agent.enemy.isOnFood = false;
+                }
+                // else if (agent.isOnCellWithAlly && agent.isOnFood) //On cell with ally and on food
+                // {
+                //     //TODO
+                // }
+                else if (!agent.isOnCellWithEnemy && agent.isOnFood) //&& !agent.isOnCellWithAlly ) 
+                {
+                    Debug.Log("Ate food with no enemies/allies");
+                    agent.EatFood();
+                    agent.isOnFood = false;
+                
+                    RemoveFood(agent.transform.position);
+                }
+            }
+        }
+        
+        //4 Kill dead agents / reset
         for (int i = 0; i < populationGOs.Count; i++)
         {
             if (populationGOs[i].dead)
@@ -513,7 +611,10 @@ public class PopulationManager : MonoBehaviour
             else
             {
                 populationGOs[i].isOnFood = false;
-                populationGOs[i].isEnemyOnFood = false;
+                populationGOs[i].isOnCellWithEnemy = false;
+                populationGOs[i].isOnCellWithAlly = false;
+                populationGOs[i].dead = false;
+                populationGOs[i].ranAway = false;
             }
         }
     }
@@ -615,19 +716,24 @@ public class PopulationManager : MonoBehaviour
         return gridManager.foods.Exists(food => food.transform.position == pos);
     }
 
-    bool IsEnemyOnSameFood(Vector3 pos, bool isAgent1)
+    Agent TryGetAgentOnSameCell(Agent agent)
+    {
+        return populationGOs.Find(a => a != agent && a.transform.position == agent.transform.position);
+    }
+
+    bool IsAllyOnSameFood(Vector3 pos, bool isAgent1)
     {
         if (isAgent1)
         {
-            return populationGOs2.Exists(agent => agent.transform.position == pos);
+            return populationGOs1.Count(agent => agent.transform.position == pos) > 1;
         }
         else
         {
-            return populationGOs1.Exists(agent => agent.transform.position == pos);
+            return populationGOs2.Count(agent => agent.transform.position == pos) > 1;
         }
     }
 
-    Agent GetEnemyOnSameFood(Vector3 pos, bool isAgent1)
+    Agent TryGetEnemyOnSamePos(Vector3 pos, bool isAgent1)
     {
         return isAgent1 ? populationGOs2.Find(agent => agent.transform.position == pos) : populationGOs1.Find(agent => agent.transform.position == pos);
     }
@@ -646,11 +752,12 @@ public class PopulationManager : MonoBehaviour
 
         if (pos.y >= GridHeight)
         {
-            pos.y--;
+            pos.y = GridHeight - 1;
         }
         else if (pos.y < 0)
         {
             pos.y = 0;
+            
         }
 
         agent.transform.position = pos;

@@ -6,39 +6,49 @@ using UnityEngine;
 public class Agent : AgentBase
 {
     public float fitness = 0;
-    public int age = 1;
-    public int foodEaten = 0;
+    public float age = 1;
+    public float foodEaten = 0;
+    
+    public Agent enemy;
     
     protected override void OnReset()
     {
+        genome.fitness = 0;
+        
         fitness = 0;
         foodEaten = 0;
+
         isOnFood = false;
-        isEnemyOnFood = false;
+        isOnCellWithEnemy = false;
+        isOnCellWithAlly = false;
         dead = false;
+        ranAway = false;
     }
 
     protected override void OnThink()
     {
         Vector3 position = transform.position;
-        Vector3 foodDir = GetDirToFood(nearFood);
-        
-        inputs[0] = nearFood.transform.position.x;
-        inputs[1] = nearFood.transform.position.y;
-        inputs[2] = foodDir.x;
-        inputs[3] = foodDir.y;
-        inputs[4] = isOnFood ? 1.0f : -1.0f;
-        inputs[5] = isEnemyOnFood ? 1.0f : -1.0f;
+        Vector3 foodPos = nearFood.transform.position;
+        //Vector3 foodDir = GetDirToFood(foodPos);
+
+        inputs[0] = foodPos.y == position.y ? 1.0f : -1.0f;
+        inputs[1] = foodPos.x;
+        inputs[2] = foodEaten > 0 ? foodEaten : -1.0f;
+        inputs[3] = age;
 
         float[] outputs = brain.Synapsis(inputs);
 
-        if (isOnFood)
+        if (isOnFood) 
         {
-            FightOrFlight(outputs[5]);
+            FightOrFlight(outputs[3]);
         }
-        else if (outputs[4] > 0.5f)
+        else if (isOnCellWithEnemy)
         {
-            Move(outputs[0], outputs[1], outputs[2], outputs[3]);
+            FightOrFlight(outputs[2]);
+        }
+        else if (outputs[2] > 0.5f)
+        {
+            Move(outputs[0], outputs[1]);
         }
         else
         {
