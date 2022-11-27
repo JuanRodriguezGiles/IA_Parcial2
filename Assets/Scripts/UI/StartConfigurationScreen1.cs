@@ -7,6 +7,7 @@ public class StartConfigurationScreen1 : MonoBehaviour
     public Slider gridSizeSlider;
     public Text populationCountTxt;
     public Slider populationCountSlider;
+    public Slider populationCountSlider2;
     public Text totalTurnsTxt;
     public Slider totalTurnsSlider;
     public Text eliteCountTxt;
@@ -104,6 +105,9 @@ public class StartConfigurationScreen1 : MonoBehaviour
     
     void OnGridSizeCountChange(float value)
     {
+        populationCountSlider.maxValue = value;
+        populationCountSlider2.maxValue = value;
+        
         PopulationManager.Instance.GridHeight = (int)value;
         PopulationManager.Instance.GridWidth = (int)value;
 

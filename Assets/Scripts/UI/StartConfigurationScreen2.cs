@@ -3,6 +3,8 @@ using UnityEngine.UI;
 
 public class StartConfigurationScreen2 : MonoBehaviour
 {
+    public Toggle useSaveDataToggle;
+
     public Text populationCountTxt;
     public Slider populationCountSlider;
     public Text eliteCountTxt;
@@ -38,6 +40,11 @@ public class StartConfigurationScreen2 : MonoBehaviour
 
     void Start()
     {
+        useSaveDataToggle.onValueChanged.AddListener(active =>
+        {
+            PopulationManager.Instance.useSavedGenomes = active;
+        });
+
         populationCountSlider.onValueChanged.AddListener(OnPopulationCountChange);
         eliteCountSlider.onValueChanged.AddListener(OnEliteCountChange);
         mutationChanceSlider.onValueChanged.AddListener(OnMutationChanceChange);

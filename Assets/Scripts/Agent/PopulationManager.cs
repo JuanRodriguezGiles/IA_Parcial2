@@ -151,10 +151,12 @@ public class PopulationManager : MonoBehaviour
         
         if (useSavedGenomes)
         {
-            string json1 = File.ReadAllText(Application.persistentDataPath + "/agent1GenomeV" + (lastSavedGenome1 - 1) + ".json");
+            //string json1 = File.ReadAllText(Application.persistentDataPath + "/agent1GenomeV" + (lastSavedGenome1 - 1) + ".json");
+            
+            string json1 = File.ReadAllText(Application.persistentDataPath + "/agent1GenomeVMAX" + ".json");
             dataModel1 = JsonUtility.FromJson<DataModel>(json1);
 
-            string json2 = File.ReadAllText(Application.persistentDataPath + "/agent2GenomeV" + (lastSavedGenome2 - 1) + ".json");
+            string json2 = File.ReadAllText(Application.persistentDataPath + "/agent2GenomeVMAX" + ".json");
             dataModel2 = JsonUtility.FromJson<DataModel>(json2);
             
             gridManager.CreateFood(dataModel1.genome.Count + dataModel2.genome.Count, GridHeight, GridWidth);
