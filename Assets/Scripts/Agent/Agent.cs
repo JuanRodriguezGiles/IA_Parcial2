@@ -9,7 +9,7 @@ public class Agent : AgentBase
     public float age = 1;
     public float foodEaten = 0;
     
-    public Agent enemy;
+    public Agent agentOnCell;
     
     protected override void OnReset()
     {
@@ -31,24 +31,26 @@ public class Agent : AgentBase
         Vector3 foodPos = nearFood.transform.position;
         //Vector3 foodDir = GetDirToFood(foodPos);
 
-        inputs[0] = foodPos.y == position.y ? 1.0f : -1.0f;
-        inputs[1] = foodPos.x;
-        inputs[2] = foodEaten > 0 ? foodEaten : -1.0f;
-        inputs[3] = age;
+        inputs[0] = foodPos.y != position.y ? 1.0f : -1.0f;
+        inputs[1] = foodPos.y != position.y ? 1.0f : -1.0f;
+        inputs[2] = foodPos.x;
+        inputs[3] = foodEaten > 0 ? foodEaten : -1.0f;
+        inputs[4] = age;
+        inputs[5] = position.y > foodPos.y ? 1.0f : -1.0f;
 
         float[] outputs = brain.Synapsis(inputs);
 
         if (isOnFood) 
         {
-            FightOrFlight(outputs[3]);
+            FightOrFlight(outputs[4]);
         }
         else if (isOnCellWithEnemy)
         {
-            FightOrFlight(outputs[2]);
+            FightOrFlight(outputs[3]);
         }
         else if (outputs[2] > 0.5f)
         {
-            Move(outputs[0], outputs[1]);
+            Move(outputs[1], outputs[5], outputs[2]);
         }
         else
         {

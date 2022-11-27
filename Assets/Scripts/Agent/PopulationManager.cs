@@ -344,7 +344,7 @@ public class PopulationManager : MonoBehaviour
 
         if (populationGOs1.Count == 0 && populationGOs2.Count == 0)
         {
-            Debug.Log("RIPPPPPPPPPPPPPP");
+            StopSimulation();
         }
         if (populationGOs1.Count == 0)
         {
@@ -462,7 +462,8 @@ public class PopulationManager : MonoBehaviour
                 if (agent.isAgent1 == a.isAgent1)
                 {
                     agent.isOnCellWithAlly = true;
-                    
+                    agent.agentOnCell = a;
+
                     if (agent.isOnFood)
                     {
                         agent.Think();
@@ -472,7 +473,7 @@ public class PopulationManager : MonoBehaviour
                 else
                 {
                     agent.isOnCellWithEnemy = true;
-                    agent.enemy = a;
+                    agent.agentOnCell = a;
                     
                     agent.Think();
                     KeepAgentInBounds(agent);
@@ -493,11 +494,11 @@ public class PopulationManager : MonoBehaviour
                     }
                     else
                     {
-                        if (agent.ranAway && agent.enemy.ranAway) //Both escape
+                        if (agent.ranAway && agent.agentOnCell.ranAway) //Both escape
                         {
                             Debug.Log("both enemies on same cell ran");
                         }
-                        else if (agent.ranAway && !agent.enemy.ranAway) //Run 75
+                        else if (agent.ranAway && !agent.agentOnCell.ranAway) //Run 75
                         {
                             if (Random.Range(0.0f, 1.0f) < 0.75f)
                             {
@@ -505,12 +506,12 @@ public class PopulationManager : MonoBehaviour
                                 agent.dead = true;
                             }
                         }
-                        else if (!agent.ranAway && agent.enemy.ranAway) //Run  75
+                        else if (!agent.ranAway && agent.agentOnCell.ranAway) //Run  75
                         {
                             if (Random.Range(0.0f, 1.0f) < 0.75f)
                             {
                                 Debug.Log("enemy tried to run away and died");
-                                agent.enemy.dead = true;
+                                agent.agentOnCell.dead = true;
                             }
                         }
                         else //Fight 50/50
@@ -518,7 +519,7 @@ public class PopulationManager : MonoBehaviour
                             if (Random.Range(0.0f, 1.0f) > 0.5f)
                             {
                                 Debug.Log("Enemy died");
-                                agent.enemy.dead = true;
+                                agent.agentOnCell.dead = true;
                             }
                             else
                             {
@@ -529,22 +530,22 @@ public class PopulationManager : MonoBehaviour
                     }
                     
                     agent.isOnCellWithEnemy = false;
-                    agent.enemy.isOnCellWithEnemy = false;
+                    agent.agentOnCell.isOnCellWithEnemy = false;
 
                 }
-                else if (agent.isOnCellWithEnemy && agent.isOnFood) //On cell with enemy and on food
+                else if (agent.isOnFood && agent.isOnCellWithEnemy) //On cell with enemy and on food
                 {
-                    if (agent.ranAway && agent.enemy.ranAway)
+                    if (agent.ranAway && agent.agentOnCell.ranAway)
                     {
                         Debug.Log("Both ran away");
                     }
-                    else if (agent.ranAway && !agent.enemy.ranAway)
+                    else if (agent.ranAway && !agent.agentOnCell.ranAway)
                     {
                         Debug.Log("Agent ran away and enemy ate");
-                        agent.enemy.EatFood();
-                        RemoveFood(agent.enemy.transform.position);
+                        agent.agentOnCell.EatFood();
+                        RemoveFood(agent.agentOnCell.transform.position);
                     }
-                    else if (!agent.ranAway && agent.enemy.ranAway)
+                    else if (!agent.ranAway && agent.agentOnCell.ranAway)
                     {
                         Debug.Log("enemy ran away and agent ate");
                         agent.EatFood();
@@ -555,7 +556,7 @@ public class PopulationManager : MonoBehaviour
                         if (Random.Range(0.0f, 1.0f) > 0.5f)
                         {
                             Debug.Log("Enemy died");
-                            agent.enemy.dead = true;
+                            agent.agentOnCell.dead = true;
                             agent.EatFood();
                             RemoveFood(agent.transform.position);
                         }
@@ -563,19 +564,55 @@ public class PopulationManager : MonoBehaviour
                         {
                             Debug.Log("Agent died");
                             agent.dead = true;
-                            agent.enemy.EatFood();
-                            RemoveFood(agent.enemy.transform.position);
+                            agent.agentOnCell.EatFood();
+                            RemoveFood(agent.agentOnCell.transform.position);
                         }
                     }
                     
                     agent.isOnFood = false;
-                    agent.enemy.isOnFood = false;
+                    agent.agentOnCell.isOnFood = false;
                 }
-                // else if (agent.isOnCellWithAlly && agent.isOnFood) //On cell with ally and on food
-                // {
-                //     //TODO
-                // }
-                else if (!agent.isOnCellWithEnemy && agent.isOnFood) //&& !agent.isOnCellWithAlly ) 
+                else if (agent.isOnFood && agent.isOnCellWithAlly) //On cell with ally and on food
+                {
+                    if (agent.ranAway && !agent.agentOnCell.ranAway) 
+                    {
+                        Debug.Log("Ally ate food and agent retreated");
+                        agent.agentOnCell.EatFood();
+                        RemoveFood(agent.agentOnCell.transform.position);
+                    }
+                    else if (!agent.ranAway && agent.agentOnCell.ranAway)
+                    {
+                        Debug.Log("Agent ate food and ally retreated");
+                        agent.agentOnCell.Retreat();
+                        agent.EatFood();
+                        RemoveFood(agent.transform.position);
+                    }
+                    else if (!agent.ranAway && !agent.agentOnCell.ranAway)
+                    {
+                        if (agent.eatWeight > agent.agentOnCell.eatWeight)
+                        {
+                            Debug.Log("Agent ate food and ally retreated");
+                            agent.agentOnCell.Retreat();
+                            agent.EatFood();
+                            RemoveFood(agent.transform.position);
+                        }
+                        else
+                        {
+                            Debug.Log("Ally ate food and agent retreated");
+                            agent.Retreat();
+                            agent.agentOnCell.EatFood();
+                            RemoveFood(agent.agentOnCell.transform.position);
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("Both allys retreated");
+                    }
+
+                    agent.isOnFood = false;
+                    agent.agentOnCell.isOnFood = false;
+                }
+                else if (agent.isOnFood && !agent.isOnCellWithEnemy && !agent.isOnCellWithAlly)  //On cell alone
                 {
                     Debug.Log("Ate food with no enemies/allies");
                     agent.EatFood();

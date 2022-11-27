@@ -12,6 +12,7 @@ public class AgentBase : MonoBehaviour
     protected float[] inputs;
     protected GameObject nearFood;
     public Vector3 lastPos;
+    public float eatWeight = 0;
 
     public bool isOnFood = false;
     public bool isOnCellWithEnemy = false;
@@ -38,16 +39,25 @@ public class AgentBase : MonoBehaviour
         this.nearFood = nearFood;
     }
 
-    protected void Move(float sameYasFood, float foodX)
+    protected void Move(float diffYasFood, float highOrLow, float foodX)
     {
         lastPos = transform.position;
 
-        bool moveUp = sameYasFood > 0.75f;
-        float positive = foodX < 0.5f ? -1f : 1f;
+        bool moveVertical = diffYasFood > 0.6;
         
-        Vector3 movement = new Vector3(!moveUp ? positive : 0f, moveUp ? positive : 0f, 0f);
+        float positive;
+        if (moveVertical)
+        {
+            positive = highOrLow > 0.75f ? -1f : 1f;
+        }
+        else
+        {
+            positive = foodX < 0.5f ? -1f : 1f;
+        }
+        
+        Vector3 movement = new Vector3(!moveVertical ? positive : 0f, moveVertical ? positive : 0f, 0f);
         transform.Translate(movement);
-        
+
         // if (foodX > foodY+0.5f)
         // {
         //     switch (foodX)
@@ -76,7 +86,7 @@ public class AgentBase : MonoBehaviour
         //             break;
         //     }
         // }
-        
+
         // if (foodX > foodY)
         // {
         //     switch (xDir)
@@ -111,6 +121,7 @@ public class AgentBase : MonoBehaviour
     {
         if (stay > 0.5f)
         {
+            eatWeight = stay;
             Debug.Log("Stays on food");
         }
         else
@@ -118,7 +129,7 @@ public class AgentBase : MonoBehaviour
             Retreat();
         }
     }
-    
+
     protected Vector3 GetDirToFood(Vector3 food)
     {
         return (food - transform.position).normalized;
@@ -130,7 +141,7 @@ public class AgentBase : MonoBehaviour
         Debug.Log("Retreated to previous pos");
         (transform.position, lastPos) = (lastPos, transform.position);
     }
-    
+
     public void Think()
     {
         OnThink();
