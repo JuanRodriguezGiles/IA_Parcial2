@@ -33,7 +33,7 @@ public class Agent : AgentBase
 
         inputs[0] = foodPos.y != position.y ? 1.0f : -1.0f;
         inputs[1] = foodPos.y != position.y ? 1.0f : -1.0f;
-        inputs[2] = foodPos.x;
+        inputs[2] = foodPos.x != position.x ? 1.0f : -1.0f;
         inputs[3] = foodEaten > 0 ? foodEaten : -1.0f;
         inputs[4] = age;
         inputs[5] = position.y > foodPos.y ? 1.0f : -1.0f;

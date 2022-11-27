@@ -24,8 +24,8 @@ public class PopulationManager : MonoBehaviour
     public bool useSavedGenomes;
     public bool resetLoadCount;
 
-    [HideInInspector] public AgentConfiguration agent1 = new AgentConfiguration();
-    [HideInInspector] public AgentConfiguration agent2 = new AgentConfiguration();
+    [HideInInspector] public AgentConfiguration agent1Config = new AgentConfiguration();
+    [HideInInspector] public AgentConfiguration agent2Config = new AgentConfiguration();
 
     GeneticAlgorithm genAlgAgent1;
     GeneticAlgorithm genAlgAgent2;
@@ -135,8 +135,8 @@ public class PopulationManager : MonoBehaviour
     {
         Save();
         // Create and confiugre the Genetic Algorithm
-        genAlgAgent1 = new GeneticAlgorithm(agent1.EliteCount, agent1.MutationChance, agent1.MutationRate);
-        genAlgAgent2 = new GeneticAlgorithm(agent2.EliteCount, agent2.MutationChance, agent2.MutationRate);
+        genAlgAgent1 = new GeneticAlgorithm(agent1Config.EliteCount, agent1Config.MutationChance, agent1Config.MutationRate);
+        genAlgAgent2 = new GeneticAlgorithm(agent2Config.EliteCount, agent2Config.MutationChance, agent2Config.MutationRate);
 
         DestroyFood();
 
@@ -163,7 +163,7 @@ public class PopulationManager : MonoBehaviour
         }
         else
         {
-            gridManager.CreateFood(agent1.PopulationCount + agent2.PopulationCount, GridHeight, GridHeight);
+            gridManager.CreateFood(agent1Config.PopulationCount + agent2Config.PopulationCount, GridHeight, GridHeight);
         }
         
         GenerateInitialPopulation();
@@ -185,6 +185,9 @@ public class PopulationManager : MonoBehaviour
 
         DestroyAgents();
         DestroyFood();
+
+        agent1Config.PopulationCount = agent1Config.initialPopulationCount;
+        agent2Config.PopulationCount = agent2Config.initialPopulationCount;
     }
 
     // Generate the random initial population
@@ -222,7 +225,7 @@ public class PopulationManager : MonoBehaviour
         }
         else
         {
-            for (int i = 0; i < agent1.PopulationCount; i++)
+            for (int i = 0; i < agent1Config.PopulationCount; i++)
             {
                 NeuralNetwork brain = CreateBrain(1);
 
@@ -236,7 +239,7 @@ public class PopulationManager : MonoBehaviour
                 populationGOs.Add(populationGOs1[i]);
             }
 
-            for (int i = 0; i < agent2.PopulationCount; i++)
+            for (int i = 0; i < agent2Config.PopulationCount; i++)
             {
                 NeuralNetwork brain = CreateBrain(2);
 
@@ -262,30 +265,30 @@ public class PopulationManager : MonoBehaviour
         if (agent == 1)
         {
             // Add first neuron layer that has as many neurons as inputs
-            brain.AddFirstNeuronLayer(agent1.InputsCount, agent1.Bias, agent1.P);
+            brain.AddFirstNeuronLayer(agent1Config.InputsCount, agent1Config.Bias, agent1Config.P);
 
-            for (int i = 0; i < agent1.HiddenLayers; i++)
+            for (int i = 0; i < agent1Config.HiddenLayers; i++)
             {
                 // Add each hidden layer with custom neurons count
-                brain.AddNeuronLayer(agent1.NeuronsCountPerHL, agent1.Bias, agent1.P);
+                brain.AddNeuronLayer(agent1Config.NeuronsCountPerHL, agent1Config.Bias, agent1Config.P);
             }
 
             // Add the output layer with as many neurons as outputs
-            brain.AddNeuronLayer(agent1.OutputsCount, agent1.Bias, agent1.P);
+            brain.AddNeuronLayer(agent1Config.OutputsCount, agent1Config.Bias, agent1Config.P);
         }
         else if (agent == 2)
         {
             // Add first neuron layer that has as many neurons as inputs
-            brain.AddFirstNeuronLayer(agent2.InputsCount, agent2.Bias, agent2.P);
+            brain.AddFirstNeuronLayer(agent2Config.InputsCount, agent2Config.Bias, agent2Config.P);
 
-            for (int i = 0; i < agent2.HiddenLayers; i++)
+            for (int i = 0; i < agent2Config.HiddenLayers; i++)
             {
                 // Add each hidden layer with custom neurons count
-                brain.AddNeuronLayer(agent2.NeuronsCountPerHL, agent2.Bias, agent2.P);
+                brain.AddNeuronLayer(agent2Config.NeuronsCountPerHL, agent2Config.Bias, agent2Config.P);
             }
 
             // Add the output layer with as many neurons as outputs
-            brain.AddNeuronLayer(agent2.OutputsCount, agent2.Bias, agent2.P);
+            brain.AddNeuronLayer(agent2Config.OutputsCount, agent2Config.Bias, agent2Config.P);
         }
 
         return brain;
@@ -353,7 +356,8 @@ public class PopulationManager : MonoBehaviour
             Debug.Log("Population1 EXTINCT");
 
             GeneticAlgorithm temp = genAlgAgent2;
-            temp.mutationRate *= 2;
+            temp.mutationRate = 1;
+            temp.mutationChance = 1;
 
             Genome[] newGenomes = temp.Epoch(population2.ToArray());
             population1.Clear();
@@ -379,7 +383,8 @@ public class PopulationManager : MonoBehaviour
             Debug.Log("Population2 EXTINCT");
 
             GeneticAlgorithm temp = genAlgAgent1;
-            temp.mutationRate *= 2;
+            temp.mutationRate = 1.0f;
+            temp.mutationChance = 1.0f;
 
             Genome[] newGenomes = temp.Epoch(population1.ToArray());
             population2.Clear();
@@ -614,7 +619,7 @@ public class PopulationManager : MonoBehaviour
                     agent.isOnFood = false;
                     agent.agentOnCell.isOnFood = false;
                 }
-                else if (agent.isOnFood && !agent.isOnCellWithEnemy && !agent.isOnCellWithAlly)  //On cell alone
+                else if (agent.isOnFood && !agent.ranAway && !agent.isOnCellWithEnemy && !agent.isOnCellWithAlly)    //On cell alone
                 {
                     Debug.Log("Ate food with no enemies/allies");
                     agent.EatFood();
@@ -685,7 +690,18 @@ public class PopulationManager : MonoBehaviour
         Vector3 pos = new Vector3(x, 0, 0);
         if (agent == 2)
         {
-            pos.y = GridHeight - 1;
+            if (GridWidth - 1 == x)
+            {
+                pos.y = GridHeight - 2;
+            }
+            else
+            {
+                pos.y = GridHeight - 1;
+            }
+        }
+        else if (GridWidth - 1 == x)
+        {
+            pos.y = GridHeight - 2;
         }
 
         GameObject go = Instantiate(agentPrefab, pos, Quaternion.identity);
@@ -830,55 +846,58 @@ public class PopulationManager : MonoBehaviour
         lastSavedGenome1 = PlayerPrefs.GetInt("LastSave1", 0);
         lastSavedGenome2 = PlayerPrefs.GetInt("LastSave2", 0);
 
-        agent1.PopulationCount = PlayerPrefs.GetInt("PopulationCount", 2);
-        agent1.EliteCount = PlayerPrefs.GetInt("EliteCount", 0);
-        agent1.MutationChance = PlayerPrefs.GetFloat("MutationChance", 0);
-        agent1.MutationRate = PlayerPrefs.GetFloat("MutationRate", 0);
-        agent1.InputsCount = PlayerPrefs.GetInt("InputsCount", 1);
-        agent1.HiddenLayers = PlayerPrefs.GetInt("HiddenLayers", 5);
-        agent1.OutputsCount = PlayerPrefs.GetInt("OutputsCount", 1);
-        agent1.NeuronsCountPerHL = PlayerPrefs.GetInt("NeuronsCountPerHL", 1);
-        agent1.Bias = PlayerPrefs.GetFloat("Bias", 0);
-        agent1.P = PlayerPrefs.GetFloat("P", 1);
+        agent1Config.PopulationCount = PlayerPrefs.GetInt("PopulationCount", 2);
+        agent1Config.EliteCount = PlayerPrefs.GetInt("EliteCount", 0);
+        agent1Config.MutationChance = PlayerPrefs.GetFloat("MutationChance", 0);
+        agent1Config.MutationRate = PlayerPrefs.GetFloat("MutationRate", 0);
+        agent1Config.InputsCount = PlayerPrefs.GetInt("InputsCount", 1);
+        agent1Config.HiddenLayers = PlayerPrefs.GetInt("HiddenLayers", 5);
+        agent1Config.OutputsCount = PlayerPrefs.GetInt("OutputsCount", 1);
+        agent1Config.NeuronsCountPerHL = PlayerPrefs.GetInt("NeuronsCountPerHL", 1);
+        agent1Config.Bias = PlayerPrefs.GetFloat("Bias", 0);
+        agent1Config.P = PlayerPrefs.GetFloat("P", 1);
 
-        agent2.PopulationCount = PlayerPrefs.GetInt("PopulationCount2", 2);
-        agent2.EliteCount = PlayerPrefs.GetInt("EliteCount2", 0);
-        agent2.MutationChance = PlayerPrefs.GetFloat("MutationChance2", 0);
-        agent2.MutationRate = PlayerPrefs.GetFloat("MutationRate2", 0);
-        agent2.InputsCount = PlayerPrefs.GetInt("InputsCount2", 1);
-        agent2.HiddenLayers = PlayerPrefs.GetInt("HiddenLayers2", 5);
-        agent2.OutputsCount = PlayerPrefs.GetInt("OutputsCount2", 1);
-        agent2.NeuronsCountPerHL = PlayerPrefs.GetInt("NeuronsCountPerHL2", 1);
-        agent2.Bias = PlayerPrefs.GetFloat("Bias2", 0);
-        agent2.P = PlayerPrefs.GetFloat("P2", 1);
+        agent2Config.PopulationCount = PlayerPrefs.GetInt("PopulationCount2", 2);
+        agent2Config.EliteCount = PlayerPrefs.GetInt("EliteCount2", 0);
+        agent2Config.MutationChance = PlayerPrefs.GetFloat("MutationChance2", 0);
+        agent2Config.MutationRate = PlayerPrefs.GetFloat("MutationRate2", 0);
+        agent2Config.InputsCount = PlayerPrefs.GetInt("InputsCount2", 1);
+        agent2Config.HiddenLayers = PlayerPrefs.GetInt("HiddenLayers2", 5);
+        agent2Config.OutputsCount = PlayerPrefs.GetInt("OutputsCount2", 1);
+        agent2Config.NeuronsCountPerHL = PlayerPrefs.GetInt("NeuronsCountPerHL2", 1);
+        agent2Config.Bias = PlayerPrefs.GetFloat("Bias2", 0);
+        agent2Config.P = PlayerPrefs.GetFloat("P2", 1);
     }
 
     private void Save()
     {
+        agent1Config.initialPopulationCount = agent1Config.PopulationCount;
+        agent2Config.initialPopulationCount = agent2Config.PopulationCount;
+        
         PlayerPrefs.SetInt("TotalTurns", TotalTurns);
         PlayerPrefs.SetInt("GridSize", GridHeight);
 
-        PlayerPrefs.SetInt("PopulationCount", agent1.PopulationCount);
-        PlayerPrefs.SetInt("EliteCount", agent1.EliteCount);
-        PlayerPrefs.SetFloat("MutationChance", agent1.MutationChance);
-        PlayerPrefs.SetFloat("MutationRate", agent1.MutationRate);
-        PlayerPrefs.SetInt("InputsCount", agent1.InputsCount);
-        PlayerPrefs.SetInt("HiddenLayers", agent1.HiddenLayers);
-        PlayerPrefs.SetInt("OutputsCount", agent1.OutputsCount);
-        PlayerPrefs.SetInt("NeuronsCountPerHL", agent1.NeuronsCountPerHL);
-        PlayerPrefs.SetFloat("Bias", agent1.Bias);
-        PlayerPrefs.SetFloat("P", agent1.P);
+        PlayerPrefs.SetInt("PopulationCount", agent1Config.PopulationCount);
+        PlayerPrefs.SetInt("EliteCount", agent1Config.EliteCount);
+        PlayerPrefs.SetFloat("MutationChance", agent1Config.MutationChance);
+        PlayerPrefs.SetFloat("MutationRate", agent1Config.MutationRate);
+        PlayerPrefs.SetInt("InputsCount", agent1Config.InputsCount);
+        PlayerPrefs.SetInt("HiddenLayers", agent1Config.HiddenLayers);
+        PlayerPrefs.SetInt("OutputsCount", agent1Config.OutputsCount);
+        PlayerPrefs.SetInt("NeuronsCountPerHL", agent1Config.NeuronsCountPerHL);
+        PlayerPrefs.SetFloat("Bias", agent1Config.Bias);
+        PlayerPrefs.SetFloat("P", agent1Config.P);
 
-        PlayerPrefs.SetInt("PopulationCount2", agent2.PopulationCount);
-        PlayerPrefs.SetInt("EliteCount2", agent2.EliteCount);
-        PlayerPrefs.SetFloat("MutationChance2", agent2.MutationChance);
-        PlayerPrefs.SetFloat("MutationRate2", agent2.MutationRate);
-        PlayerPrefs.SetInt("InputsCount2", agent2.InputsCount);
-        PlayerPrefs.SetInt("HiddenLayers2", agent2.HiddenLayers);
-        PlayerPrefs.SetInt("OutputsCount2", agent2.OutputsCount);
-        PlayerPrefs.SetInt("NeuronsCountPerHL2", agent2.NeuronsCountPerHL);
-        PlayerPrefs.SetFloat("Bias2", agent2.Bias);
-        PlayerPrefs.SetFloat("P2", agent2.P);
+        PlayerPrefs.SetInt("PopulationCount2", agent2Config.PopulationCount);
+        PlayerPrefs.SetInt("EliteCount2", agent2Config.EliteCount);
+        PlayerPrefs.SetFloat("MutationChance2", agent2Config.MutationChance);
+        PlayerPrefs.SetFloat("MutationRate2", agent2Config.MutationRate);
+        PlayerPrefs.SetInt("InputsCount2", agent2Config.InputsCount);
+        PlayerPrefs.SetInt("HiddenLayers2", agent2Config.HiddenLayers);
+        PlayerPrefs.SetInt("OutputsCount2", agent2Config.OutputsCount);
+        PlayerPrefs.SetInt("NeuronsCountPerHL2", agent2Config.NeuronsCountPerHL);
+        PlayerPrefs.SetFloat("Bias2", agent2Config.Bias);
+        PlayerPrefs.SetFloat("P2", agent2Config.P);
     }
 
     private void Breed(bool isAgent1)
@@ -924,7 +943,7 @@ public class PopulationManager : MonoBehaviour
                 populationGOs.Add(newAgent);
             }
 
-            agent1.PopulationCount = population1.Count;
+            agent1Config.PopulationCount = population1.Count;
         }
         else
         {
@@ -959,7 +978,7 @@ public class PopulationManager : MonoBehaviour
                 populationGOs.Add(newAgent);
             }
 
-            agent2.PopulationCount = population2.Count;
+            agent2Config.PopulationCount = population2.Count;
         }
     }
 

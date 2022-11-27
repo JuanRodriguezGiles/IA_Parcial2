@@ -67,86 +67,86 @@ public class StartConfigurationScreen2 : MonoBehaviour
         inputsText = inputsCountTxt.text;
         outputsText = outputsCountTxt.text;
 
-        populationCountSlider.value = PopulationManager.Instance.agent2.PopulationCount;
-        eliteCountSlider.value = PopulationManager.Instance.agent2.EliteCount;
-        mutationChanceSlider.value = PopulationManager.Instance.agent2.MutationChance * 100.0f;
-        mutationRateSlider.value = PopulationManager.Instance.agent2.MutationRate * 100.0f;
-        hiddenLayersCountSlider.value = PopulationManager.Instance.agent2.HiddenLayers;
-        neuronsPerHLSlider.value = PopulationManager.Instance.agent2.NeuronsCountPerHL;
-        biasSlider.value = PopulationManager.Instance.agent2.Bias;
-        sigmoidSlopeSlider.value = PopulationManager.Instance.agent2.P;
-        inputsSlider.value = PopulationManager.Instance.agent2.InputsCount;
-        outputsSlider.value = PopulationManager.Instance.agent2.OutputsCount;
+        populationCountSlider.value = PopulationManager.Instance.agent2Config.PopulationCount;
+        eliteCountSlider.value = PopulationManager.Instance.agent2Config.EliteCount;
+        mutationChanceSlider.value = PopulationManager.Instance.agent2Config.MutationChance * 100.0f;
+        mutationRateSlider.value = PopulationManager.Instance.agent2Config.MutationRate * 100.0f;
+        hiddenLayersCountSlider.value = PopulationManager.Instance.agent2Config.HiddenLayers;
+        neuronsPerHLSlider.value = PopulationManager.Instance.agent2Config.NeuronsCountPerHL;
+        biasSlider.value = PopulationManager.Instance.agent2Config.Bias;
+        sigmoidSlopeSlider.value = PopulationManager.Instance.agent2Config.P;
+        inputsSlider.value = PopulationManager.Instance.agent2Config.InputsCount;
+        outputsSlider.value = PopulationManager.Instance.agent2Config.OutputsCount;
     }
 
     void OnInputsCountChange(float value)
     {
-        PopulationManager.Instance.agent2.InputsCount = (int)value;
+        PopulationManager.Instance.agent2Config.InputsCount = (int)value;
 
-        inputsCountTxt.text = string.Format(inputsText, PopulationManager.Instance.agent2.InputsCount);
+        inputsCountTxt.text = string.Format(inputsText, PopulationManager.Instance.agent2Config.InputsCount);
     }
     
     void OnOutputsCountChange(float value)
     {
-        PopulationManager.Instance.agent2.OutputsCount = (int)value;
+        PopulationManager.Instance.agent2Config.OutputsCount = (int)value;
 
-        outputsCountTxt.text = string.Format(outputsText, PopulationManager.Instance.agent2.OutputsCount);
+        outputsCountTxt.text = string.Format(outputsText, PopulationManager.Instance.agent2Config.OutputsCount);
     }
     
     void OnPopulationCountChange(float value)
     {
-        PopulationManager.Instance.agent2.PopulationCount = (int)value;
+        PopulationManager.Instance.agent2Config.PopulationCount = (int)value;
 
-        populationCountTxt.text = string.Format(populationText, PopulationManager.Instance.agent2.PopulationCount);
+        populationCountTxt.text = string.Format(populationText, PopulationManager.Instance.agent2Config.PopulationCount);
     }
 
     void OnEliteCountChange(float value)
     {
-        PopulationManager.Instance.agent2.EliteCount = (int)value;
+        PopulationManager.Instance.agent2Config.EliteCount = (int)value;
 
-        eliteCountTxt.text = string.Format(elitesText, PopulationManager.Instance.agent2.EliteCount);
+        eliteCountTxt.text = string.Format(elitesText, PopulationManager.Instance.agent2Config.EliteCount);
     }
 
     void OnMutationChanceChange(float value)
     {
-        PopulationManager.Instance.agent2.MutationChance = value / 100.0f;
+        PopulationManager.Instance.agent2Config.MutationChance = value / 100.0f;
 
-        mutationChanceTxt.text = string.Format(mutationChanceText, (int)(PopulationManager.Instance.agent2.MutationChance * 100));
+        mutationChanceTxt.text = string.Format(mutationChanceText, (int)(PopulationManager.Instance.agent2Config.MutationChance * 100));
     }
 
     void OnMutationRateChange(float value)
     {
-        PopulationManager.Instance.agent2.MutationRate = value / 100.0f;
+        PopulationManager.Instance.agent2Config.MutationRate = value / 100.0f;
 
-        mutationRateTxt.text = string.Format(mutationRateText, (int)(PopulationManager.Instance.agent2.MutationRate * 100));
+        mutationRateTxt.text = string.Format(mutationRateText, (int)(PopulationManager.Instance.agent2Config.MutationRate * 100));
     }
 
     void OnHiddenLayersCountChange(float value)
     {
-        PopulationManager.Instance.agent2.HiddenLayers = (int)value;
+        PopulationManager.Instance.agent2Config.HiddenLayers = (int)value;
 
-        hiddenLayersCountTxt.text = string.Format(hiddenLayersCountText, PopulationManager.Instance.agent2.HiddenLayers);
+        hiddenLayersCountTxt.text = string.Format(hiddenLayersCountText, PopulationManager.Instance.agent2Config.HiddenLayers);
     }
 
     void OnNeuronsPerHLChange(float value)
     {
-        PopulationManager.Instance.agent2.NeuronsCountPerHL = (int)value;
+        PopulationManager.Instance.agent2Config.NeuronsCountPerHL = (int)value;
 
-        neuronsPerHLCountTxt.text = string.Format(neuronsPerHLCountText, PopulationManager.Instance.agent2.NeuronsCountPerHL);
+        neuronsPerHLCountTxt.text = string.Format(neuronsPerHLCountText, PopulationManager.Instance.agent2Config.NeuronsCountPerHL);
     }
 
     void OnBiasChange(float value)
     {
-        PopulationManager.Instance.agent2.Bias = -value;
+        PopulationManager.Instance.agent2Config.Bias = -value;
 
-        biasTxt.text = string.Format(biasText, PopulationManager.Instance.agent2.Bias.ToString("0.00"));
+        biasTxt.text = string.Format(biasText, PopulationManager.Instance.agent2Config.Bias.ToString("0.00"));
     }
 
     void OnSigmoidSlopeChange(float value)
     {
-        PopulationManager.Instance.agent2.P = value;
+        PopulationManager.Instance.agent2Config.P = value;
 
-        sigmoidSlopeTxt.text = string.Format(sigmoidSlopeText, PopulationManager.Instance.agent2.P.ToString("0.00"));
+        sigmoidSlopeTxt.text = string.Format(sigmoidSlopeText, PopulationManager.Instance.agent2Config.P.ToString("0.00"));
     }
 
     void OnStartButtonClick()

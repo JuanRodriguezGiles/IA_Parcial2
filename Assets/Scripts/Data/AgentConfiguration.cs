@@ -3,6 +3,8 @@ public class AgentConfiguration
 {
     public int PopulationCount = 40;
 
+    public int initialPopulationCount = 0;
+    
     public int EliteCount = 4;
     public float MutationChance = 0.10f;
     public float MutationRate = 0.01f;

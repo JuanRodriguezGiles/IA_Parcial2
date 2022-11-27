@@ -73,34 +73,34 @@ public class StartConfigurationScreen1 : MonoBehaviour
         inputsText = inputsCountTxt.text;
         outputsText = outputsCountTxt.text;
 
-        populationCountSlider.value = PopulationManager.Instance.agent1.PopulationCount;
+        populationCountSlider.value = PopulationManager.Instance.agent1Config.PopulationCount;
         totalTurnsSlider.value = PopulationManager.Instance.TotalTurns;
-        eliteCountSlider.value = PopulationManager.Instance.agent1.EliteCount;
-        mutationChanceSlider.value = PopulationManager.Instance.agent1.MutationChance * 100.0f;
-        mutationRateSlider.value = PopulationManager.Instance.agent1.MutationRate * 100.0f;
-        hiddenLayersCountSlider.value = PopulationManager.Instance.agent1.HiddenLayers;
-        neuronsPerHLSlider.value = PopulationManager.Instance.agent1.NeuronsCountPerHL;
-        biasSlider.value = PopulationManager.Instance.agent1.Bias;
-        sigmoidSlopeSlider.value = PopulationManager.Instance.agent1.P;
+        eliteCountSlider.value = PopulationManager.Instance.agent1Config.EliteCount;
+        mutationChanceSlider.value = PopulationManager.Instance.agent1Config.MutationChance * 100.0f;
+        mutationRateSlider.value = PopulationManager.Instance.agent1Config.MutationRate * 100.0f;
+        hiddenLayersCountSlider.value = PopulationManager.Instance.agent1Config.HiddenLayers;
+        neuronsPerHLSlider.value = PopulationManager.Instance.agent1Config.NeuronsCountPerHL;
+        biasSlider.value = PopulationManager.Instance.agent1Config.Bias;
+        sigmoidSlopeSlider.value = PopulationManager.Instance.agent1Config.P;
         gridSizeSlider.value = PopulationManager.Instance.GridHeight;
-        inputsSlider.value = PopulationManager.Instance.agent1.InputsCount;
-        outputsSlider.value = PopulationManager.Instance.agent1.OutputsCount;
+        inputsSlider.value = PopulationManager.Instance.agent1Config.InputsCount;
+        outputsSlider.value = PopulationManager.Instance.agent1Config.OutputsCount;
 
         startButton.onClick.AddListener(OnStartButtonClick);
     }
 
     void OnInputsCountChange(float value)
     {
-        PopulationManager.Instance.agent1.InputsCount = (int)value;
+        PopulationManager.Instance.agent1Config.InputsCount = (int)value;
 
-        inputsCountTxt.text = string.Format(inputsText, PopulationManager.Instance.agent1.InputsCount);
+        inputsCountTxt.text = string.Format(inputsText, PopulationManager.Instance.agent1Config.InputsCount);
     }
     
     void OnOutputsCountChange(float value)
     {
-        PopulationManager.Instance.agent1.OutputsCount = (int)value;
+        PopulationManager.Instance.agent1Config.OutputsCount = (int)value;
 
-        outputsCountTxt.text = string.Format(outputsText, PopulationManager.Instance.agent1.OutputsCount);
+        outputsCountTxt.text = string.Format(outputsText, PopulationManager.Instance.agent1Config.OutputsCount);
     }
     
     void OnGridSizeCountChange(float value)
@@ -116,9 +116,9 @@ public class StartConfigurationScreen1 : MonoBehaviour
     
     void OnPopulationCountChange(float value)
     {
-        PopulationManager.Instance.agent1.PopulationCount = (int)value;
+        PopulationManager.Instance.agent1Config.PopulationCount = (int)value;
 
-        populationCountTxt.text = string.Format(populationText, PopulationManager.Instance.agent1.PopulationCount);
+        populationCountTxt.text = string.Format(populationText, PopulationManager.Instance.agent1Config.PopulationCount);
     }
 
     void OnTotalTurnsChange(float value)
@@ -130,51 +130,51 @@ public class StartConfigurationScreen1 : MonoBehaviour
 
     void OnEliteCountChange(float value)
     {
-        PopulationManager.Instance.agent1.EliteCount = (int)value;
+        PopulationManager.Instance.agent1Config.EliteCount = (int)value;
 
-        eliteCountTxt.text = string.Format(elitesText, PopulationManager.Instance.agent1.EliteCount);
+        eliteCountTxt.text = string.Format(elitesText, PopulationManager.Instance.agent1Config.EliteCount);
     }
 
     void OnMutationChanceChange(float value)
     {
-        PopulationManager.Instance.agent1.MutationChance = value / 100.0f;
+        PopulationManager.Instance.agent1Config.MutationChance = value / 100.0f;
 
-        mutationChanceTxt.text = string.Format(mutationChanceText, (int)(PopulationManager.Instance.agent1.MutationChance * 100));
+        mutationChanceTxt.text = string.Format(mutationChanceText, (int)(PopulationManager.Instance.agent1Config.MutationChance * 100));
     }
 
     void OnMutationRateChange(float value)
     {
-        PopulationManager.Instance.agent1.MutationRate = value / 100.0f;
+        PopulationManager.Instance.agent1Config.MutationRate = value / 100.0f;
 
-        mutationRateTxt.text = string.Format(mutationRateText, (int)(PopulationManager.Instance.agent1.MutationRate * 100));
+        mutationRateTxt.text = string.Format(mutationRateText, (int)(PopulationManager.Instance.agent1Config.MutationRate * 100));
     }
 
     void OnHiddenLayersCountChange(float value)
     {
-        PopulationManager.Instance.agent1.HiddenLayers = (int)value;
+        PopulationManager.Instance.agent1Config.HiddenLayers = (int)value;
 
-        hiddenLayersCountTxt.text = string.Format(hiddenLayersCountText, PopulationManager.Instance.agent1.HiddenLayers);
+        hiddenLayersCountTxt.text = string.Format(hiddenLayersCountText, PopulationManager.Instance.agent1Config.HiddenLayers);
     }
 
     void OnNeuronsPerHLChange(float value)
     {
-        PopulationManager.Instance.agent1.NeuronsCountPerHL = (int)value;
+        PopulationManager.Instance.agent1Config.NeuronsCountPerHL = (int)value;
 
-        neuronsPerHLCountTxt.text = string.Format(neuronsPerHLCountText, PopulationManager.Instance.agent1.NeuronsCountPerHL);
+        neuronsPerHLCountTxt.text = string.Format(neuronsPerHLCountText, PopulationManager.Instance.agent1Config.NeuronsCountPerHL);
     }
 
     void OnBiasChange(float value)
     {
-        PopulationManager.Instance.agent1.Bias = -value;
+        PopulationManager.Instance.agent1Config.Bias = -value;
 
-        biasTxt.text = string.Format(biasText, PopulationManager.Instance.agent1.Bias.ToString("0.00"));
+        biasTxt.text = string.Format(biasText, PopulationManager.Instance.agent1Config.Bias.ToString("0.00"));
     }
 
     void OnSigmoidSlopeChange(float value)
     {
-        PopulationManager.Instance.agent1.P = value;
+        PopulationManager.Instance.agent1Config.P = value;
 
-        sigmoidSlopeTxt.text = string.Format(sigmoidSlopeText, PopulationManager.Instance.agent1.P.ToString("0.00"));
+        sigmoidSlopeTxt.text = string.Format(sigmoidSlopeText, PopulationManager.Instance.agent1Config.P.ToString("0.00"));
     }
 
     void OnStartButtonClick()

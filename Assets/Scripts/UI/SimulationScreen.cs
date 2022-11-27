@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+
+using UnityEngine;
 using UnityEngine.UI;
 
 public class SimulationScreen : MonoBehaviour
@@ -9,6 +11,8 @@ public class SimulationScreen : MonoBehaviour
     public Text avgFitnessTxt;
     public Text worstFitnessTxt;
     public Text timerTxt;
+    public Text agents1Txt;
+    public Text agents2Txt;
     public Slider timerSlider;
     public Button pauseBtn;
     public Button stopBtn;
@@ -23,6 +27,8 @@ public class SimulationScreen : MonoBehaviour
     string timerText;
     int lastGeneration = 0;
     private int turns = 0;
+    private int pop1 = 0;
+    private int pop2 = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -32,6 +38,9 @@ public class SimulationScreen : MonoBehaviour
 
         timerTxt.text = string.Format(timerText, PopulationManager.Instance.IterationCount);
 
+        pop1 = PopulationManager.Instance.agent1Config.PopulationCount;
+        pop2 = PopulationManager.Instance.agent2Config.PopulationCount;
+        
         if (string.IsNullOrEmpty(generationsCountText))
             generationsCountText = generationsCountTxt.text;
         if (string.IsNullOrEmpty(turnsCountText))
@@ -102,6 +111,18 @@ public class SimulationScreen : MonoBehaviour
         {
             turnsCountText = PopulationManager.Instance.turns.ToString();
             turnsCountTxt.text = string.Format(generationsCountText, PopulationManager.Instance.turns);
+        }
+
+        if (PopulationManager.Instance.populationGOs1.Count !=  pop1)
+        {
+            pop1 = PopulationManager.Instance.populationGOs1.Count;
+            agents1Txt.text = $"Agents 1: {pop1}";
+        }
+
+        if (PopulationManager.Instance.populationGOs2.Count != pop2)
+        {
+            pop2 = PopulationManager.Instance.populationGOs2.Count;
+            agents2Txt.text = $"Agents 2: {pop2}";
         }
     }
 }
