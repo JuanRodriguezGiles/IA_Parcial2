@@ -1,10 +1,15 @@
-﻿using UnityEngine;
+﻿using System;
 
+using UnityEngine;
+
+using Random = UnityEngine.Random;
+
+[Serializable]
 public class Neuron
 {
-	private float[] weights;
-	private float bias;
-	private float p; 
+	public float[] weights;
+	public float bias;
+	public float p; 
 
 	public int WeightsCount
 	{

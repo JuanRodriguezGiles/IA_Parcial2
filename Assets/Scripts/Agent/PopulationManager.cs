@@ -201,10 +201,12 @@ public class PopulationManager : MonoBehaviour
 
         if (useSavedGenomes)
         {
-            string json1 = File.ReadAllText(Application.persistentDataPath + "/agent1GenomeV" + lastSavedGenome1 + ".json");
+            //string json1 = File.ReadAllText(Application.persistentDataPath + "/agent1GenomeV" + lastSavedGenome1 + ".json");
+            string json1 = File.ReadAllText(Application.persistentDataPath + "/agent1GenomeVMax" + ".json");
             DataModel dataModel1 = JsonUtility.FromJson<DataModel>(json1);
 
-            string json2 = File.ReadAllText(Application.persistentDataPath + "/agent2GenomeV" + lastSavedGenome2 + ".json");
+            //string json2 = File.ReadAllText(Application.persistentDataPath + "/agent2GenomeV" + lastSavedGenome2 + ".json");
+            string json2 = File.ReadAllText(Application.persistentDataPath + "/agent2GenomeVMax" + ".json");
             DataModel dataModel2 = JsonUtility.FromJson<DataModel>(json2);
 
             for (int i = 0; i < dataModel1.genome.Count; i++) 
@@ -583,7 +585,7 @@ public class PopulationManager : MonoBehaviour
                 {
                     if (agent.ranAway && !agent.agentOnCell.ranAway) 
                     {
-                        Debug.Log("Ally ate food and agent retreated");
+                        Debug.Log("Agent ate food and ally retreated");
                         agent.agentOnCell.EatFood();
                         RemoveFood(agent.agentOnCell.transform.position);
                     }
