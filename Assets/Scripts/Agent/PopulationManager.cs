@@ -22,7 +22,7 @@ public class PopulationManager : MonoBehaviour
     public GameObject agent2Prefab;
 
     public bool useSavedGenomes;
-    public bool resetLoadCount;
+    public bool resetLoadCount = false;
 
     [HideInInspector] public AgentConfiguration agent1Config = new AgentConfiguration();
     [HideInInspector] public AgentConfiguration agent2Config = new AgentConfiguration();
@@ -124,6 +124,12 @@ public class PopulationManager : MonoBehaviour
     void Awake()
     {
         instance = this;
+        if (resetLoadCount)
+        {
+            useSavedGenomes = false;
+            PlayerPrefs.DeleteKey("LastSave1");
+            PlayerPrefs.DeleteKey("LastSave2");
+        }
         Load();
     }
 
@@ -141,22 +147,16 @@ public class PopulationManager : MonoBehaviour
         DestroyFood();
 
         gridManager.CreateGrid(GridHeight, GridWidth);
-        
-        if (resetLoadCount)
-        {
-            useSavedGenomes = false;
-            PlayerPrefs.DeleteKey("LastSave1");
-            PlayerPrefs.DeleteKey("LastSave2");
-        }
-        
+
         if (useSavedGenomes)
         {
-            //string json1 = File.ReadAllText(Application.persistentDataPath + "/agent1GenomeV" + (lastSavedGenome1 - 1) + ".json");
-            
+            // string json1 = File.ReadAllText(Application.persistentDataPath + "/agent1GenomeV" + (lastSavedGenome1 - 1) + ".json");
+            // string json2 = File.ReadAllText(Application.persistentDataPath + "/agent2GenomeV" + (lastSavedGenome2 - 1) + ".json");
             string json1 = File.ReadAllText(Application.persistentDataPath + "/agent1GenomeVMAX" + ".json");
+            string json2 = File.ReadAllText(Application.persistentDataPath + "/agent2GenomeVMAX" + ".json");
             dataModel1 = JsonUtility.FromJson<DataModel>(json1);
 
-            string json2 = File.ReadAllText(Application.persistentDataPath + "/agent2GenomeVMAX" + ".json");
+            
             dataModel2 = JsonUtility.FromJson<DataModel>(json2);
             
             gridManager.CreateFood(dataModel1.genome.Count + dataModel2.genome.Count, GridHeight, GridWidth);
@@ -201,12 +201,12 @@ public class PopulationManager : MonoBehaviour
 
         if (useSavedGenomes)
         {
-            //string json1 = File.ReadAllText(Application.persistentDataPath + "/agent1GenomeV" + lastSavedGenome1 + ".json");
+            // string json1 = File.ReadAllText(Application.persistentDataPath + "/agent1GenomeV" + lastSavedGenome1 + ".json");
+            // string json2 = File.ReadAllText(Application.persistentDataPath + "/agent2GenomeV" + lastSavedGenome2 + ".json");
             string json1 = File.ReadAllText(Application.persistentDataPath + "/agent1GenomeVMax" + ".json");
-            DataModel dataModel1 = JsonUtility.FromJson<DataModel>(json1);
-
-            //string json2 = File.ReadAllText(Application.persistentDataPath + "/agent2GenomeV" + lastSavedGenome2 + ".json");
             string json2 = File.ReadAllText(Application.persistentDataPath + "/agent2GenomeVMax" + ".json");
+            
+            DataModel dataModel1 = JsonUtility.FromJson<DataModel>(json1);
             DataModel dataModel2 = JsonUtility.FromJson<DataModel>(json2);
 
             for (int i = 0; i < dataModel1.genome.Count; i++) 
